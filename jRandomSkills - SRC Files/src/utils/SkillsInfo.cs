@@ -1,17 +1,20 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
+using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using src.player;
-using System.Collections.Concurrent;
-using System.Reflection;
 using static src.jRandomSkills;
 
 namespace src.utils
 {
     public static class SkillsInfo
     {
-        private static readonly string configsFolder = Path.Combine(Instance.ModuleDirectory, "configs");
+        private static readonly string configsFolder = Path.Combine(
+            Instance.ModuleDirectory,
+            "configs"
+        );
         private static readonly string configPath = Path.Combine(configsFolder, "skillsInfo.json");
         private static readonly object fileLock = new();
 
@@ -26,7 +29,9 @@ namespace src.utils
 
                 if (!File.Exists(configPath))
                 {
-                    Instance.Logger.LogInformation("Config file does not exist. Create a new skills info file...");
+                    Instance.Logger.LogInformation(
+                        "Config file does not exist. Create a new skills info file..."
+                    );
                     SaveConfig(newConfig);
                     return config = newConfig;
                 }
@@ -34,7 +39,14 @@ namespace src.utils
                 try
                 {
                     string json;
-                    using (var fs = new FileStream(configPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (
+                        var fs = new FileStream(
+                            configPath,
+                            FileMode.Open,
+                            FileAccess.Read,
+                            FileShare.ReadWrite
+                        )
+                    )
                     using (var sr = new StreamReader(fs))
                         json = sr.ReadToEnd();
 
@@ -43,10 +55,12 @@ namespace src.utils
                         foreach (var skillObj in root)
                         {
                             var name = skillObj["Name"]?.ToString();
-                            if (string.IsNullOrEmpty(name)) continue;
+                            if (string.IsNullOrEmpty(name))
+                                continue;
 
                             var instance = newConfig.FirstOrDefault(x => x.Name == name.ToString());
-                            if (instance != null) JsonConvert.PopulateObject(skillObj.ToString(), instance);
+                            if (instance != null)
+                                JsonConvert.PopulateObject(skillObj.ToString(), instance);
                         }
                 }
                 catch
@@ -82,25 +96,41 @@ namespace src.utils
 
         public static T GetValue<T>(object skill, string key)
         {
-            if (config == null) return default!;
+            if (config == null)
+                return default!;
 
             var skillConfig = LoadedConfig.FirstOrDefault(s => s.Name == skill.ToString());
-            if (skillConfig == null) return default!;
+            if (skillConfig == null)
+                return default!;
 
-            var prop = skillConfig.GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var prop = skillConfig
+                .GetType()
+                .GetProperty(
+                    key,
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase
+                );
             if (prop != null)
             {
                 var value = prop.GetValue(skillConfig);
-                if (value == null) return default!;
-                else return (T)Convert.ChangeType(value, typeof(T));
+                if (value == null)
+                    return default!;
+                else
+                    return (T)Convert.ChangeType(value, typeof(T));
             }
 
-            var field = skillConfig.GetType().GetField(key, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var field = skillConfig
+                .GetType()
+                .GetField(
+                    key,
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase
+                );
             if (field != null)
             {
                 var value = field.GetValue(skillConfig);
-                if (value == null) return default!;
-                else return (T)Convert.ChangeType(value, typeof(T));
+                if (value == null)
+                    return default!;
+                else
+                    return (T)Convert.ChangeType(value, typeof(T));
             }
 
             return default!;
@@ -110,23 +140,37 @@ namespace src.utils
         {
             public SkillsInfoModel()
             {
-                foreach (var skill in
-                    Assembly.GetExecutingAssembly().GetTypes()
-                        .Where(t => typeof(DefaultSkillInfo).IsAssignableFrom(t) && t.Name == "SkillConfig")
+                foreach (
+                    var skill in Assembly
+                        .GetExecutingAssembly()
+                        .GetTypes()
+                        .Where(t =>
+                            typeof(DefaultSkillInfo).IsAssignableFrom(t) && t.Name == "SkillConfig"
+                        )
                         .Select(t =>
                         {
-                            var ctor = t.GetConstructors().FirstOrDefault(c => c.GetParameters().All(p => p.IsOptional));
-                            if (ctor == null) return null;
+                            var ctor = t.GetConstructors()
+                                .FirstOrDefault(c => c.GetParameters().All(p => p.IsOptional));
+                            if (ctor == null)
+                                return null;
                             var args = ctor.GetParameters().Select(p => Type.Missing).ToArray();
                             return ctor.Invoke(args) as DefaultSkillInfo;
                         })
                         .Where(instance => instance != null)
-                        .Cast<DefaultSkillInfo>())
+                        .Cast<DefaultSkillInfo>()
+                )
                     Add(skill);
-			}
+            }
         }
 
-        public class DefaultSkillInfo(Skills skill, bool active = true, string color = "#ffffff", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false)
+        public class DefaultSkillInfo(
+            Skills skill,
+            bool active = true,
+            string color = "#ffffff",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
         {
             public bool NeedsTeammates { get; set; } = needsTeammates;
             public bool DisableOnFreezeTime { get; set; } = disableOnFreezeTime;

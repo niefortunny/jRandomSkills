@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Runtime.InteropServices;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -23,7 +23,13 @@ namespace src.player.skills
             CEntityInstance param = h.GetParam<CEntityInstance>(0);
             CTakeDamageInfo param2 = h.GetParam<CTakeDamageInfo>(1);
 
-            if (param == null || param.Entity == null || param2 == null || param2.Attacker == null || param2.Attacker.Value == null)
+            if (
+                param == null
+                || param.Entity == null
+                || param2 == null
+                || param2.Attacker == null
+                || param2.Attacker.Value == null
+            )
                 return;
 
             CCSPlayerPawn attackerPawn = new(param2.Attacker.Value.Handle);
@@ -32,18 +38,29 @@ namespace src.player.skills
             if (attackerPawn.DesignerName != "player" || victimPawn.DesignerName != "player")
                 return;
 
-            if (attackerPawn == null || attackerPawn.Controller?.Value == null || victimPawn == null || victimPawn.Controller?.Value == null)
+            if (
+                attackerPawn == null
+                || attackerPawn.Controller?.Value == null
+                || victimPawn == null
+                || victimPawn.Controller?.Value == null
+            )
                 return;
 
             CCSPlayerController attacker = attackerPawn.Controller.Value.As<CCSPlayerController>();
             CCSPlayerController victim = victimPawn.Controller.Value.As<CCSPlayerController>();
 
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker.SteamID);
-            if (playerInfo == null) return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker.SteamID
+            );
+            if (playerInfo == null)
+                return;
 
             if (attacker.PawnIsAlive)
             {
-                nint hitGroupPointer = Marshal.ReadIntPtr(param2.Handle, GameData.GetOffset("CTakeDamageInfo_HitGroup"));
+                nint hitGroupPointer = Marshal.ReadIntPtr(
+                    param2.Handle,
+                    GameData.GetOffset("CTakeDamageInfo_HitGroup")
+                );
                 if (hitGroupPointer != nint.Zero)
                 {
                     nint hitGroupOffset = Marshal.ReadIntPtr(hitGroupPointer, 16);
@@ -54,8 +71,9 @@ namespace src.player.skills
                             int oldValue = Marshal.ReadInt32(hitGroupOffset, 56);
                             hitGroups.TryAdd(hitGroupOffset, Marshal.ReadInt32(hitGroupOffset, 56));
                             Marshal.WriteInt32(hitGroupOffset, 56, (int)HitGroup_t.HITGROUP_HEAD);
-                        } else if (hitGroups.TryGetValue(hitGroupOffset, out var hitGroup))
-                                Marshal.WriteInt32(hitGroupOffset, 56, hitGroup);
+                        }
+                        else if (hitGroups.TryGetValue(hitGroupOffset, out var hitGroup))
+                            Marshal.WriteInt32(hitGroupOffset, 56, hitGroup);
                     }
                 }
             }
@@ -67,8 +85,21 @@ namespace src.player.skills
                 Marshal.WriteInt32(hit.Key, 56, hit.Value);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff0000", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#ff0000",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

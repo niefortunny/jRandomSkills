@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -5,24 +7,43 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Runtime.InteropServices;
-using WASDMenuAPI.Classes;
-using WASDSharedAPI;
-using System.Collections.Concurrent;
 using src.player;
 using src.player.skills;
+using WASDMenuAPI.Classes;
+using WASDSharedAPI;
 
 namespace src.utils
 {
     public static class SkillUtils
     {
-        private static readonly MemoryFunctionWithReturn<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, int> HEGrenadeProjectile_CreateFunc = new(GameData.GetSignature("HEGrenadeProjectile_CreateFunc"));
-        private static readonly MemoryFunctionVoid<nint, float, RoundEndReason, nint, nint> TerminateRoundFunc = new(GameData.GetSignature("CCSGameRules_TerminateRound"));
+        private static readonly MemoryFunctionWithReturn<
+            IntPtr,
+            IntPtr,
+            IntPtr,
+            IntPtr,
+            IntPtr,
+            IntPtr,
+            IntPtr,
+            int
+        > HEGrenadeProjectile_CreateFunc = new(
+            GameData.GetSignature("HEGrenadeProjectile_CreateFunc")
+        );
+        private static readonly MemoryFunctionVoid<
+            nint,
+            float,
+            RoundEndReason,
+            nint,
+            nint
+        > TerminateRoundFunc = new(GameData.GetSignature("CCSGameRules_TerminateRound"));
 
         public static void PrintToChat(CCSPlayerController player, string msg, bool isError)
         {
-            string checkIcon = isError ? $"{ChatColors.DarkRed}✖{ChatColors.LightRed}" : $"{ChatColors.Green}✔{ChatColors.Lime}";
-            player.PrintToChat($" {ChatColors.DarkRed}► {ChatColors.Green}[{ChatColors.DarkRed} {jRandomSkills.Tag} {ChatColors.Green}] {checkIcon} {msg}");
+            // string checkIcon = isError
+            //     ? $"{ChatColors.DarkRed}✖{ChatColors.LightRed}"
+            //     : $"{ChatColors.Green}✔{ChatColors.Lime}";
+            player.PrintToChat(
+                $"☠ {ChatColors.Green}HS{ChatColors.Lime}MAN{ChatColors.Olive}IA{ChatColors.White}: {msg}"
+            );
         }
 
         public static bool IsFreezeTime()
@@ -39,13 +60,26 @@ namespace src.utils
         public static void TryGiveWeapon(CCSPlayerController player, CsItem item, int count = 1)
         {
             string? itemString = EnumUtils.GetEnumMemberAttributeValue(item);
-            if (string.IsNullOrWhiteSpace(itemString)) return;
+            if (string.IsNullOrWhiteSpace(itemString))
+                return;
 
-            if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) return;
-            if (player.PlayerPawn.Value.WeaponServices == null) return;
+            if (
+                player == null
+                || !player.IsValid
+                || player.PlayerPawn.Value == null
+                || !player.PlayerPawn.Value.IsValid
+            )
+                return;
+            if (player.PlayerPawn.Value.WeaponServices == null)
+                return;
 
-            var exists = player.PlayerPawn.Value.WeaponServices.MyWeapons
-                .FirstOrDefault(w => w != null && w.IsValid && w.Value != null && w.Value.IsValid && w.Value.DesignerName == itemString);
+            var exists = player.PlayerPawn.Value.WeaponServices.MyWeapons.FirstOrDefault(w =>
+                w != null
+                && w.IsValid
+                && w.Value != null
+                && w.Value.IsValid
+                && w.Value.DesignerName == itemString
+            );
             if (exists == null)
                 for (int i = 0; i < count; i++)
                     player.GiveNamedItem(item);
@@ -53,12 +87,17 @@ namespace src.utils
 
         public static double GetDistance(Vector vector1, Vector vector2)
         {
-            return Math.Sqrt(Math.Pow(vector2.X - vector1.X, 2) + Math.Pow(vector2.Y - vector1.Y, 2) + Math.Pow(vector2.Z - vector1.Z, 2));
+            return Math.Sqrt(
+                Math.Pow(vector2.X - vector1.X, 2)
+                    + Math.Pow(vector2.Y - vector1.Y, 2)
+                    + Math.Pow(vector2.Z - vector1.Z, 2)
+            );
         }
 
         public static string SecondsToTimer(int totalSeconds)
         {
-            if (totalSeconds <= 0) return "00:00";
+            if (totalSeconds <= 0)
+                return "00:00";
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
             return $"{minutes:D2}:{seconds:D2}";
@@ -78,18 +117,40 @@ namespace src.utils
 
         public static void ChangePlayerScale(CCSPlayerController? player, float scale)
         {
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid || playerPawn.CBodyComponent == null || playerPawn.CBodyComponent.SceneNode == null) return;
+            if (
+                playerPawn == null
+                || !playerPawn.IsValid
+                || playerPawn.CBodyComponent == null
+                || playerPawn.CBodyComponent.SceneNode == null
+            )
+                return;
 
             playerPawn.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = scale;
             Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_CBodyComponent");
-            Server.NextFrame(() => playerPawn.AcceptInput("SetScale", playerPawn, playerPawn, scale.ToString()));
+            Server.NextFrame(() =>
+                playerPawn.AcceptInput("SetScale", playerPawn, playerPawn, scale.ToString())
+            );
         }
 
-        public static void CreateHEGrenadeProjectile(Vector pos, QAngle angle, Vector vel, int teamNum)
+        public static void CreateHEGrenadeProjectile(
+            Vector pos,
+            QAngle angle,
+            Vector vel,
+            int teamNum
+        )
         {
-            HEGrenadeProjectile_CreateFunc.Invoke(pos.Handle, angle.Handle, vel.Handle, vel.Handle, IntPtr.Zero, 44, teamNum);
+            HEGrenadeProjectile_CreateFunc.Invoke(
+                pos.Handle,
+                angle.Handle,
+                vel.Handle,
+                vel.Handle,
+                IntPtr.Zero,
+                44,
+                teamNum
+            );
         }
 
         public static void TakeHealth(CCSPlayerPawn? pawn, int damage)
@@ -99,8 +160,11 @@ namespace src.utils
 
             if (pawn.Controller.Value != null && pawn.Controller.Value.IsValid)
             {
-                var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == pawn.Controller.Value.SteamID);
-                if (playerInfo == null) return;
+                var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == pawn.Controller.Value.SteamID
+                );
+                if (playerInfo == null)
+                    return;
                 if (playerInfo.Skill == Skills.Jester && Jester.GetJesterMode())
                     return;
             }
@@ -118,8 +182,11 @@ namespace src.utils
 
         public static void ResetPrintHTML(CCSPlayerController? player)
         {
-            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(s =>
+                s.SteamID == player?.SteamID
+            );
+            if (playerInfo == null)
+                return;
             playerInfo.PrintHTML = null;
         }
 
@@ -138,7 +205,8 @@ namespace src.utils
 
         public static string GetDesignerName(CBasePlayerWeapon? weapon)
         {
-            if (weapon == null || !weapon.IsValid) return string.Empty;
+            if (weapon == null || !weapon.IsValid)
+                return string.Empty;
             string designerName = weapon.DesignerName;
             ushort index = weapon.AttributeManager.Item.ItemDefinitionIndex;
 
@@ -148,7 +216,7 @@ namespace src.utils
                 ("weapon_m4a1", 60) => "weapon_m4a1_silencer",
                 ("weapon_hkp2000", 61) => "weapon_usp_silencer",
                 ("weapon_deagle", 64) => "weapon_revolver",
-                _ => designerName
+                _ => designerName,
             };
 
             return designerName;
@@ -164,121 +232,193 @@ namespace src.utils
         public static void CloseMenu(CCSPlayerController? player)
         {
             var manager = GetMenuManager();
-            if (manager == null) return;
+            if (manager == null)
+                return;
             manager.CloseMenu(player);
         }
 
         public static bool HasMenu(CCSPlayerController? player)
         {
             var manager = GetMenuManager();
-            if (manager == null) return false;
+            if (manager == null)
+                return false;
             return manager.HasMenu(player);
         }
 
-        public static void UpdateMenu(CCSPlayerController? player, ConcurrentBag<(string, string)> items)
+        public static void UpdateMenu(
+            CCSPlayerController? player,
+            ConcurrentBag<(string, string)> items
+        )
         {
-            if (player == null) return;
+            if (player == null)
+                return;
 
             var manager = GetMenuManager();
-            if (manager == null) return;
+            if (manager == null)
+                return;
 
-            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == player.SteamID
+            );
+            if (playerInfo == null)
+                return;
 
             Dictionary<string, Action<CCSPlayerController, IWasdMenuOption>> list = [];
             foreach (var item in items)
-                list.TryAdd(item.Item1, (p, option) =>
-                {
-                    jRandomSkills.Instance.SkillAction(playerInfo.Skill.ToString(), "TypeSkill", [p, new[] { item.Item2 }]);
-                    manager.CloseMenu(p);
-                });
+                list.TryAdd(
+                    item.Item1,
+                    (p, option) =>
+                    {
+                        jRandomSkills.Instance.SkillAction(
+                            playerInfo.Skill.ToString(),
+                            "TypeSkill",
+                            [p, new[] { item.Item2 }]
+                        );
+                        manager.CloseMenu(p);
+                    }
+                );
 
             manager.UpdateActiveMenu(player, list);
         }
 
-        public static void CreateMenu(CCSPlayerController? player, ConcurrentBag<(string, string)> enemies, (string, string)? lastElement = null)
+        public static void CreateMenu(
+            CCSPlayerController? player,
+            ConcurrentBag<(string, string)> enemies,
+            (string, string)? lastElement = null
+        )
         {
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
 
-            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null || !playerInfo.DisplayHUD) return;
+            var playerInfo = jRandomSkills.Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == player.SteamID
+            );
+            if (playerInfo == null || !playerInfo.DisplayHUD)
+                return;
 
             var skillData = SkillData.Skills.FirstOrDefault(s => s.Skill == playerInfo.Skill);
-            if (skillData == null) return;
+            if (skillData == null)
+                return;
 
             var manager = GetMenuManager();
-            if (manager == null) return;
+            if (manager == null)
+                return;
 
             var config = Config.LoadedConfig.HtmlHudCustomisation;
             var your_skill = player.GetTranslation("your_skill");
-            var emptySymbol = $"<font class='fontSize-{(string.IsNullOrEmpty(your_skill) ? "l" : "ml")}'> </font>";
+            var emptySymbol =
+                $"<font class='fontSize-{(string.IsNullOrEmpty(your_skill) ? "l" : "ml")}'> </font>";
 
             string infoLine = string.IsNullOrEmpty(your_skill)
                 ? ""
                 : $"<font class='fontWeight-Bold fontSize-{config.HeaderLineSize}' color='{config.HeaderLineColor}'>{your_skill}:</font><br>";
 
-            string skillLine = $"<font class='fontWeight-Bold fontSize-{config.SkillLineSize}' color='{skillData.Color}'>{player.GetSkillName(skillData.Skill)}</font><br>";
+            string skillLine =
+                $"<font class='fontWeight-Bold fontSize-{config.SkillLineSize}' color='{skillData.Color}'>{player.GetSkillName(skillData.Skill)}</font><br>";
 
-            var skill_select_info = player.GetTranslation($"{playerInfo.Skill.ToString().ToLower()}_select_info");
+            var skill_select_info = player.GetTranslation(
+                $"{playerInfo.Skill.ToString().ToLower()}_select_info"
+            );
             string remainingLine = string.IsNullOrWhiteSpace(skill_select_info)
                 ? ""
                 : $"<font class='fontSize-{config.WSADMenuSelectInfoLineSize}' color='{config.WSADMenuSelectInfoLineColor}'>{skill_select_info}</font><br>";
 
             var hudContent = infoLine + skillLine + remainingLine;
 
-            string controllsLine = 
+            string controllsLine =
                 $"{emptySymbol}<font class='fontSize-{config.WSADMenuControllsLineSize}' color='{config.WSADMenuControllsLineColor1}'>{player.GetTranslation($"menu_controlls_scroll")}</font>"
                 + $"<font class='fontSize-{config.WSADMenuControllsLineSize}' color='{config.WSADMenuControllsLineColor2}'>{player.GetTranslation($"menu_controlls_padding")}</font>"
                 + $"<font class='fontSize-{config.WSADMenuControllsLineSize}' color='{config.WSADMenuControllsLineColor3}'>{player.GetTranslation($"menu_controlls_select")}</font>{emptySymbol}";
 
-            string itemText = $"<font class='fontSize-{config.WSADMenuItemLineSize}' color='{config.WSADMenuItemLineColor}'>{{0}}</font><br>";
-            string itemHoverText = $"<font class='fontSize-{config.WSADMenuItemLineSize}'><font color='purple'>[ </font><font color='{config.WSADMenuItemHoverLineColor}'>{{0}}</font><font color='purple'> ]</font></font><br>";
+            string itemText =
+                $"<font class='fontSize-{config.WSADMenuItemLineSize}' color='{config.WSADMenuItemLineColor}'>{{0}}</font><br>";
+            string itemHoverText =
+                $"<font class='fontSize-{config.WSADMenuItemLineSize}'><font color='purple'>[ </font><font color='{config.WSADMenuItemHoverLineColor}'>{{0}}</font><font color='purple'> ]</font></font><br>";
 
             IWasdMenu menu = manager.CreateMenu(hudContent, itemText, itemHoverText, controllsLine);
             foreach (var enemy in enemies)
-                menu.Add(enemy.Item1, (p, option) =>
-                {
-                    jRandomSkills.Instance.SkillAction(playerInfo.Skill.ToString(), "TypeSkill", [p, new[] { enemy.Item2 }]);
-                    manager.CloseMenu(p);
-                });
+                menu.Add(
+                    enemy.Item1,
+                    (p, option) =>
+                    {
+                        jRandomSkills.Instance.SkillAction(
+                            playerInfo.Skill.ToString(),
+                            "TypeSkill",
+                            [p, new[] { enemy.Item2 }]
+                        );
+                        manager.CloseMenu(p);
+                    }
+                );
             if (lastElement != null)
-                menu.Add(lastElement.Value.Item1, (p, option) =>
-                {
-                    jRandomSkills.Instance.SkillAction(playerInfo.Skill.ToString(), "TypeSkill", [p, new[] { lastElement.Value.Item2 }]);
-                    manager.CloseMenu(p);
-                });
+                menu.Add(
+                    lastElement.Value.Item1,
+                    (p, option) =>
+                    {
+                        jRandomSkills.Instance.SkillAction(
+                            playerInfo.Skill.ToString(),
+                            "TypeSkill",
+                            [p, new[] { lastElement.Value.Item2 }]
+                        );
+                        manager.CloseMenu(p);
+                    }
+                );
             manager.OpenMainMenu(player, menu);
         }
 
         public static void SetTeamScores(short ctScore, short tScore, RoundEndReason roundEndReason)
         {
-            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null) return;
+            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null)
+                return;
             UpdateServerTeamScores(ctScore, tScore);
-            TerminateRoundFunc.Invoke(jRandomSkills.Instance.GameRules.Handle, 5f, roundEndReason, 0, 0);
+            TerminateRoundFunc.Invoke(
+                jRandomSkills.Instance.GameRules.Handle,
+                5f,
+                roundEndReason,
+                0,
+                0
+            );
         }
 
         public static void TerminateRound(CsTeam winnerTeam)
         {
-            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null) return;
+            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null)
+                return;
             var teams = Utilities.FindAllEntitiesByDesignerName<CCSTeam>("cs_team_manager");
-            var ctTeam = teams.First(t => t.IsValid && (CsTeam)t.TeamNum == CsTeam.CounterTerrorist);
+            var ctTeam = teams.First(t =>
+                t.IsValid && (CsTeam)t.TeamNum == CsTeam.CounterTerrorist
+            );
             var tTeams = teams.First(t => t.IsValid && (CsTeam)t.TeamNum == CsTeam.Terrorist);
-            if (ctTeam == null || tTeams == null) return;
+            if (ctTeam == null || tTeams == null)
+                return;
 
-            short ctScore = (short)(winnerTeam == CsTeam.CounterTerrorist ? ctTeam.Score + 1 : ctTeam.Score);
-            short tScore = (short)(winnerTeam == CsTeam.Terrorist ? tTeams.Score + 1 : tTeams.Score);
+            short ctScore = (short)(
+                winnerTeam == CsTeam.CounterTerrorist ? ctTeam.Score + 1 : ctTeam.Score
+            );
+            short tScore = (short)(
+                winnerTeam == CsTeam.Terrorist ? tTeams.Score + 1 : tTeams.Score
+            );
 
             UpdateServerTeamScores(ctScore, tScore);
-            TerminateRoundFunc.Invoke(jRandomSkills.Instance.GameRules.Handle, 5f, winnerTeam == CsTeam.CounterTerrorist ? RoundEndReason.BombDefused : RoundEndReason.TargetBombed, 0, 0);
+            TerminateRoundFunc.Invoke(
+                jRandomSkills.Instance.GameRules.Handle,
+                5f,
+                winnerTeam == CsTeam.CounterTerrorist
+                    ? RoundEndReason.BombDefused
+                    : RoundEndReason.TargetBombed,
+                0,
+                0
+            );
         }
 
         private static void UpdateServerTeamScores(short ctScore, short tScore)
         {
-            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null) return;
+            if (jRandomSkills.Instance == null || jRandomSkills.Instance.GameRules == null)
+                return;
             int totalRoundsPlayed = ctScore + tScore;
             int maxRounds = ConVar.Find("mp_maxrounds")?.GetPrimitiveValue<int>() ?? 24;
             int halfRounds = maxRounds / 2;
-            int overtimeMaxRounds = ConVar.Find("mp_overtime_maxrounds")?.GetPrimitiveValue<int>() ?? 6;
+            int overtimeMaxRounds =
+                ConVar.Find("mp_overtime_maxrounds")?.GetPrimitiveValue<int>() ?? 6;
             int overtimeLimit = ConVar.Find("mp_overtime_limit")?.GetPrimitiveValue<int>() ?? 1;
 
             var gameRulesProxy = jRandomSkills.Instance.GameRules;
@@ -307,7 +447,10 @@ namespace src.utils
                 gameRulesProxy.TeamIntroPeriod = true;
             }
 
-            var structOffset = jRandomSkills.Instance.GameRules.Handle + Schema.GetSchemaOffset("CCSGameRules", "m_bMapHasBombZone") + 0x02;
+            var structOffset =
+                jRandomSkills.Instance.GameRules.Handle
+                + Schema.GetSchemaOffset("CCSGameRules", "m_bMapHasBombZone")
+                + 0x02;
             var matchStruct = Marshal.PtrToStructure<MCCSMatch>(structOffset);
 
             matchStruct.m_totalScore = (short)totalRoundsPlayed;
@@ -344,7 +487,7 @@ namespace src.utils
                     if (roundsInOvertime % overtimeMaxRounds == 0)
                     {
                         int currentOvertime = roundsInOvertime / overtimeMaxRounds;
-                        if ( currentOvertime < overtimeLimit)
+                        if (currentOvertime < overtimeLimit)
                         {
                             gameRulesProxy.SwapTeamsOnRestart = true;
                             gameRulesProxy.SwitchingTeamsAtRoundReset = true;
@@ -361,7 +504,9 @@ namespace src.utils
         private static void UpdateClientTeamScores(MCCSMatch match)
         {
             var teams = Utilities.FindAllEntitiesByDesignerName<CCSTeam>("cs_team_manager");
-            var ctTeam = teams.First(t => t.IsValid && (CsTeam)t.TeamNum == CsTeam.CounterTerrorist);
+            var ctTeam = teams.First(t =>
+                t.IsValid && (CsTeam)t.TeamNum == CsTeam.CounterTerrorist
+            );
             var tTeams = teams.First(t => t.IsValid && (CsTeam)t.TeamNum == CsTeam.Terrorist);
 
             if (ctTeam != null && tTeams != null)
