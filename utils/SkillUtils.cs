@@ -154,7 +154,9 @@ namespace src.utils
 
         public static void TakeHealth(CCSPlayerPawn? pawn, int damage)
         {
-            if (pawn == null || !pawn.IsValid)
+            Console.WriteLine($"Pawn LifeState = {(LifeState_t)pawn!.LifeState}");
+
+            if (pawn == null || !pawn.IsValid || pawn.LifeState is not (byte)LifeState_t.LIFE_ALIVE)
                 return;
 
             if (pawn.Controller.Value != null && pawn.Controller.Value.IsValid)
