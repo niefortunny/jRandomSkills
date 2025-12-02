@@ -1,9 +1,9 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -28,15 +28,24 @@ namespace src.player.skills
             var victim = @event.Userid;
             int damage = @event.DmgHealth;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim) || attacker == victim) return;
-            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker?.SteamID);
-            if (attackerInfo == null || attackerInfo.Skill != skillName) return;
+            if (
+                !Instance.IsPlayerValid(attacker)
+                || !Instance.IsPlayerValid(victim)
+                || attacker == victim
+            )
+                return;
+            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker?.SteamID
+            );
+            if (attackerInfo == null || attackerInfo.Skill != skillName)
+                return;
 
             if (playersToSender.ContainsKey(victim!.Handle))
                 return;
 
             var spawn = GetSpawnVector(victim);
-            if (spawn == null) return;
+            if (spawn == null)
+                return;
             victim!.PlayerPawn!.Value!.Teleport(spawn);
             playersToSender.TryAdd(victim.Handle, 0);
         }
@@ -48,7 +57,13 @@ namespace src.player.skills
 
         private static Vector? GetSpawnVector(CCSPlayerController player)
         {
-            var spawns = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>(player.Team == CsTeam.Terrorist ? "info_player_terrorist" : "info_player_counterterrorist").ToList();
+            var spawns = Utilities
+                .FindAllEntitiesByDesignerName<SpawnPoint>(
+                    player.Team == CsTeam.Terrorist
+                        ? "info_player_terrorist"
+                        : "info_player_counterterrorist"
+                )
+                .ToList();
             if (spawns.Count != 0)
             {
                 var randomSpawn = spawns[Instance.Random.Next(spawns.Count)];
@@ -57,8 +72,21 @@ namespace src.player.skills
             return null;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#a68132", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#a68132",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

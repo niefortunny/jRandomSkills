@@ -1,12 +1,12 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -15,21 +15,53 @@ namespace src.player.skills
         private const Skills skillName = Skills.Ghost;
         private static readonly string[] disabledWeapons =
         [
-            "weapon_deagle", "weapon_revolver", "weapon_glock", "weapon_usp_silencer",
-            "weapon_cz75a", "weapon_fiveseven", "weapon_p250", "weapon_tec9",
-            "weapon_elite", "weapon_hkp2000", "weapon_ak47", "weapon_m4a1",
-            "weapon_m4a4", "weapon_m4a1_silencer", "weapon_famas", "weapon_galilar",
-            "weapon_aug", "weapon_sg553", "weapon_mp9", "weapon_mac10",
-            "weapon_bizon", "weapon_mp7", "weapon_ump45", "weapon_p90",
-            "weapon_mp5sd", "weapon_ssg08", "weapon_awp", "weapon_scar20",
-            "weapon_g3sg1", "weapon_nova", "weapon_xm1014", "weapon_mag7",
-            "weapon_sawedoff", "weapon_m249", "weapon_negev"
+            "weapon_deagle",
+            "weapon_revolver",
+            "weapon_glock",
+            "weapon_usp_silencer",
+            "weapon_cz75a",
+            "weapon_fiveseven",
+            "weapon_p250",
+            "weapon_tec9",
+            "weapon_elite",
+            "weapon_hkp2000",
+            "weapon_ak47",
+            "weapon_m4a1",
+            "weapon_m4a4",
+            "weapon_m4a1_silencer",
+            "weapon_famas",
+            "weapon_galilar",
+            "weapon_aug",
+            "weapon_sg553",
+            "weapon_mp9",
+            "weapon_mac10",
+            "weapon_bizon",
+            "weapon_mp7",
+            "weapon_ump45",
+            "weapon_p90",
+            "weapon_mp5sd",
+            "weapon_ssg08",
+            "weapon_awp",
+            "weapon_scar20",
+            "weapon_g3sg1",
+            "weapon_nova",
+            "weapon_xm1014",
+            "weapon_mag7",
+            "weapon_sawedoff",
+            "weapon_m249",
+            "weapon_negev",
         ];
-        private static readonly ConcurrentDictionary<ulong, ConcurrentBag<uint>> invisibleEntities = [];
+        private static readonly ConcurrentDictionary<
+            ulong,
+            ConcurrentBag<uint>
+        > invisibleEntities = [];
 
         public static void LoadSkill()
         {
-            if (SkillsInfo.LoadedConfig.FirstOrDefault(s => s.Name == skillName.ToString())?.Active != true)
+            if (
+                SkillsInfo.LoadedConfig.FirstOrDefault(s => s.Name == skillName.ToString())?.Active
+                != true
+            )
                 return;
 
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
@@ -44,10 +76,12 @@ namespace src.player.skills
         public static void WeaponPickup(EventItemPickup @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
 
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
             SetWeaponVisibility(player!, false);
             SetWeaponAttack(player!, true);
         }
@@ -55,10 +89,12 @@ namespace src.player.skills
         public static void WeaponEquip(EventItemEquip @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
 
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
             SetWeaponVisibility(player!, false);
             SetWeaponAttack(player!, true);
         }
@@ -67,9 +103,10 @@ namespace src.player.skills
         {
             foreach (var (info, player) in infoList)
             {
-                if (player == null) continue;
+                if (player == null)
+                    continue;
                 foreach ((var playerId, var itemList) in invisibleEntities)
-                    if (player.SteamID !=  playerId)
+                    if (player.SteamID != playerId)
                         foreach (var item in itemList)
                             info.TransmitEntities.Remove(item);
             }
@@ -96,7 +133,9 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     UpdateHUD(player);
                 if (!player.PawnIsAlive)
@@ -110,7 +149,9 @@ namespace src.player.skills
             var playerPawn = player.PlayerPawn.Value;
             if (playerPawn != null)
             {
-                var color = visible ? Color.FromArgb(255, 255, 255, 255) : Color.FromArgb(0, 255, 255, 255);
+                var color = visible
+                    ? Color.FromArgb(255, 255, 255, 255)
+                    : Color.FromArgb(0, 255, 255, 255);
                 var shadowStrength = visible ? 1.0f : 0.0f;
 
                 playerPawn.Render = color;
@@ -121,14 +162,21 @@ namespace src.player.skills
 
         private static void SetWeaponVisibility(CCSPlayerController player, bool visible)
         {
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerPawn = player.PlayerPawn.Value!;
-            if (playerPawn.WeaponServices == null) return;
+            if (playerPawn.WeaponServices == null)
+                return;
 
             invisibleEntities.TryRemove(player.SteamID, out _);
             foreach (var weapon in playerPawn.WeaponServices.MyWeapons)
             {
-                if (weapon != null && weapon.IsValid && weapon.Value != null && weapon.Value.IsValid)
+                if (
+                    weapon != null
+                    && weapon.IsValid
+                    && weapon.Value != null
+                    && weapon.Value.IsValid
+                )
                 {
                     if (!visible)
                     {
@@ -149,30 +197,52 @@ namespace src.player.skills
 
         private static void SetWeaponAttack(CCSPlayerController player, bool disableWeapon)
         {
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var pawn = player?.PlayerPawn?.Value;
-            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null) return;
+            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null)
+                return;
 
             foreach (var weapon in pawn.WeaponServices.MyWeapons)
-                if (weapon != null && weapon.IsValid && weapon.Value != null && weapon.Value.IsValid)
+                if (
+                    weapon != null
+                    && weapon.IsValid
+                    && weapon.Value != null
+                    && weapon.Value.IsValid
+                )
                     if (disabledWeapons.Contains(weapon.Value.DesignerName))
                     {
-                        weapon.Value.NextPrimaryAttackTick = disableWeapon ? int.MaxValue : Server.TickCount;
-                        weapon.Value.NextSecondaryAttackTick = disableWeapon ? int.MaxValue : Server.TickCount;
+                        weapon.Value.NextPrimaryAttackTick = disableWeapon
+                            ? int.MaxValue
+                            : Server.TickCount;
+                        weapon.Value.NextSecondaryAttackTick = disableWeapon
+                            ? int.MaxValue
+                            : Server.TickCount;
 
-                        Utilities.SetStateChanged(weapon.Value, "CBasePlayerWeapon", "m_nNextPrimaryAttackTick");
-                        Utilities.SetStateChanged(weapon.Value, "CBasePlayerWeapon", "m_nNextSecondaryAttackTick");
+                        Utilities.SetStateChanged(
+                            weapon.Value,
+                            "CBasePlayerWeapon",
+                            "m_nNextPrimaryAttackTick"
+                        );
+                        Utilities.SetStateChanged(
+                            weapon.Value,
+                            "CBasePlayerWeapon",
+                            "m_nNextSecondaryAttackTick"
+                        );
                     }
         }
 
         private static void UpdateHUD(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var pawn = player.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null) return;
+            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null)
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             var weapon = pawn.WeaponServices.ActiveWeapon.Value;
             if (weapon == null || !weapon.IsValid || !disabledWeapons.Contains(weapon.DesignerName))
@@ -181,11 +251,25 @@ namespace src.player.skills
                 return;
             }
 
-            playerInfo.PrintHTML = $"<font color='#FF0000'>{player.GetTranslation("disabled_weapon")}</font>";
+            playerInfo.PrintHTML =
+                $"<font color='#FF0000'>{player.GetTranslation("disabled_weapon")}</font>";
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#FFFFFF", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#FFFFFF",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

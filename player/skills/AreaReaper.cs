@@ -1,8 +1,8 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -27,56 +27,91 @@ namespace src.player.skills
         public static void TypeSkill(CCSPlayerController player, string[] commands)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
             if (playerInfo.SkillChance == 1)
             {
-                player.PrintToChat($" {ChatColors.Red}{player.GetTranslation("areareaper_used_info")}");
+                player.PrintToChat(
+                    $" {ChatColors.Red}{player.GetTranslation("areareaper_used_info")}"
+                );
                 return;
             }
 
-            int site = bombsiteA.Contains(commands[0]) ? 0 : bombsiteB.Contains(commands[0]) ? 1 : -1;
-            if (site == -1) {
-                player.PrintToChat($" {ChatColors.Red}{player.GetTranslation("areareaper_incorrect_site")}");
+            int site =
+                bombsiteA.Contains(commands[0]) ? 0
+                : bombsiteB.Contains(commands[0]) ? 1
+                : -1;
+            if (site == -1)
+            {
+                player.PrintToChat(
+                    $" {ChatColors.Red}{player.GetTranslation("areareaper_incorrect_site")}"
+                );
                 return;
             }
-            
-            var bombTargets = Utilities.FindAllEntitiesByDesignerName<CBombTarget>("func_bomb_target").ToArray();
+
+            var bombTargets = Utilities
+                .FindAllEntitiesByDesignerName<CBombTarget>("func_bomb_target")
+                .ToArray();
             if (bombTargets.Length == 2)
             {
                 bombTargets[site].AcceptInput("Disable");
                 playerInfo.SkillChance = 1;
-                player.PrintToChat($" {ChatColors.Green}{player.GetTranslation("areareaper_site_disabled", (site == 0 ? 'A' : 'B'))}");
+                player.PrintToChat(
+                    $" {ChatColors.Green}{player.GetTranslation("areareaper_site_disabled", (site == 0 ? 'A' : 'B'))}"
+                );
             }
             else
-                player.PrintToChat($" {ChatColors.Red}{player.GetTranslation("areareaper_no_site")}");
+                player.PrintToChat(
+                    $" {ChatColors.Red}{player.GetTranslation("areareaper_no_site")}"
+                );
         }
 
         public static void EnableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
             playerInfo.SkillChance = 0;
-            SkillUtils.CreateMenu(player, [(player.GetTranslation("bombsite_a"), "a")], (player.GetTranslation("bombsite_b"), "b"));
+            SkillUtils.CreateMenu(
+                player,
+                [(player.GetTranslation("bombsite_a"), "a")],
+                (player.GetTranslation("bombsite_b"), "b")
+            );
         }
 
         public static void DisableSkill(CCSPlayerController player)
         {
             SkillUtils.CloseMenu(player);
-            if (Instance.SkillPlayer.FirstOrDefault(p => p.Skill == skillName) != null) return;
+            if (Instance.SkillPlayer.FirstOrDefault(p => p.Skill == skillName) != null)
+                return;
             EnableBombsite();
-
         }
 
         private static void EnableBombsite()
         {
-            var bombTargets = Utilities.FindAllEntitiesByDesignerName<CBombTarget>("func_bomb_target");
+            var bombTargets = Utilities.FindAllEntitiesByDesignerName<CBombTarget>(
+                "func_bomb_target"
+            );
             foreach (var bombTarget in bombTargets)
                 bombTarget.AcceptInput("Enable");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#edf5b5", CsTeam onlyTeam = CsTeam.CounterTerrorist, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#edf5b5",
+            CsTeam onlyTeam = CsTeam.CounterTerrorist,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

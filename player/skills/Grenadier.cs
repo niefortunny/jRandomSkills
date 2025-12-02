@@ -17,7 +17,8 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             SkillUtils.TryGiveWeapon(player, CsItem.HEGrenade);
         }
 
@@ -25,15 +26,29 @@ namespace src.player.skills
         {
             var player = @event.Userid;
             var weapon = @event.Weapon;
-            if (weapon != "hegrenade" || !Instance.IsPlayerValid(player)) return;
+            if (weapon != "hegrenade" || !Instance.IsPlayerValid(player))
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
             if (playerInfo?.Skill == skillName)
                 player!.GiveNamedItem($"weapon_{weapon}");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#4a6e21", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#4a6e21",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

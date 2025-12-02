@@ -19,31 +19,63 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (!Instance.IsPlayerValid(player))
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
 
                 if (playerInfo?.Skill == skillName)
                 {
                     var pawn = player.PlayerPawn.Value!;
                     var weaponServices = pawn.WeaponServices;
-                    if (weaponServices == null || weaponServices.ActiveWeapon == null || !weaponServices.ActiveWeapon.IsValid) continue;
-                   
+                    if (
+                        weaponServices == null
+                        || weaponServices.ActiveWeapon == null
+                        || !weaponServices.ActiveWeapon.IsValid
+                    )
+                        continue;
+
                     var weapon = weaponServices.ActiveWeapon.Value;
-                    if (weapon == null || !weapon.IsValid || pawn.CameraServices == null) continue;
-                    
+                    if (weapon == null || !weapon.IsValid || pawn.CameraServices == null)
+                        continue;
+
                     pawn.AimPunchTickBase = 0;
                     pawn.AimPunchTickFraction = 0f;
                     pawn.CameraServices.CsViewPunchAngleTick = 0;
                     pawn.CameraServices.CsViewPunchAngleTickRatio = 0f;
 
-                    Schema.SetSchemaValue<Int32>(weapon.Handle, "CBasePlayerWeapon", "m_nNextPrimaryAttackTick", Server.TickCount);
-                    Schema.SetSchemaValue<Int32>(weapon.Handle, "CBasePlayerWeapon", "m_nNextSecondaryAttackTick", Server.TickCount);
+                    Schema.SetSchemaValue<Int32>(
+                        weapon.Handle,
+                        "CBasePlayerWeapon",
+                        "m_nNextPrimaryAttackTick",
+                        Server.TickCount
+                    );
+                    Schema.SetSchemaValue<Int32>(
+                        weapon.Handle,
+                        "CBasePlayerWeapon",
+                        "m_nNextSecondaryAttackTick",
+                        Server.TickCount
+                    );
                 }
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#8a42f5", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#8a42f5",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

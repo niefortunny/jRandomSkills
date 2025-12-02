@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using System.Numerics;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -6,8 +8,6 @@ using CS2TraceRay.Class;
 using CS2TraceRay.Enum;
 using CS2TraceRay.Struct;
 using src.utils;
-using System.Drawing;
-using System.Numerics;
 using static src.jRandomSkills;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
@@ -22,22 +22,42 @@ namespace src.player.skills
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
         }
 
-        public unsafe static void WeaponFire(EventWeaponFire @event)
+        public static unsafe void WeaponFire(EventWeaponFire @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
             var pawn = player!.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null || pawn.WeaponServices == null) return;
+            if (
+                pawn == null
+                || !pawn.IsValid
+                || pawn.AbsOrigin == null
+                || pawn.WeaponServices == null
+            )
+                return;
 
             var activeWeapon = pawn.WeaponServices.ActiveWeapon.Value;
-            if (activeWeapon == null || !activeWeapon.IsValid || activeWeapon.DesignerName != "weapon_taser") return;
+            if (
+                activeWeapon == null
+                || !activeWeapon.IsValid
+                || activeWeapon.DesignerName != "weapon_taser"
+            )
+                return;
 
-            Vector eyePos = new(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
-            Vector endPos = eyePos + SkillUtils.GetForwardVector(pawn.EyeAngles) * SkillsInfo.GetValue<float>(skillName, "maxDistance");
+            Vector eyePos = new(
+                pawn.AbsOrigin.X,
+                pawn.AbsOrigin.Y,
+                pawn.AbsOrigin.Z + pawn.ViewOffset.Z
+            );
+            Vector endPos =
+                eyePos
+                + SkillUtils.GetForwardVector(pawn.EyeAngles)
+                    * SkillsInfo.GetValue<float>(skillName, "maxDistance");
 
             Ray ray = new(Vector3.Zero);
             CTraceFilter filter = new(pawn.Index, pawn.Index)
@@ -49,7 +69,7 @@ namespace src.player.skills
                 m_nBits = 11,
                 m_bIterateEntities = true,
                 m_bHitTriggers = false,
-                m_nInteractsAs = 0x40000
+                m_nInteractsAs = 0x40000,
             };
 
             filter.m_nHierarchyIds[0] = pawn.GetHierarchyId();
@@ -59,23 +79,39 @@ namespace src.player.skills
             if (Config.LoadedConfig.CS2TraceRayDebug)
             {
                 CreateLine(eyePos, endPos, Color.FromArgb(255, 255, 255, 0));
-                CreateLine(new Vector(trace.StartPos.X, trace.StartPos.Y, trace.StartPos.Z), new Vector(trace.EndPos.X, trace.EndPos.Y, trace.EndPos.Z), Color.FromArgb(255, 255, 0, 0));
-                CreateLine(new Vector(trace.StartPos.X, trace.StartPos.Y, trace.StartPos.Z), new Vector(trace.Position.X, trace.Position.Y, trace.Position.Z), Color.FromArgb(255, 0, 0, 255));
+                CreateLine(
+                    new Vector(trace.StartPos.X, trace.StartPos.Y, trace.StartPos.Z),
+                    new Vector(trace.EndPos.X, trace.EndPos.Y, trace.EndPos.Z),
+                    Color.FromArgb(255, 255, 0, 0)
+                );
+                CreateLine(
+                    new Vector(trace.StartPos.X, trace.StartPos.Y, trace.StartPos.Z),
+                    new Vector(trace.Position.X, trace.Position.Y, trace.Position.Z),
+                    Color.FromArgb(255, 0, 0, 255)
+                );
 
                 if (trace.DidHit())
                 {
-                    var val = Activator.CreateInstance(typeof(CBaseEntity), trace.HitEntity) as CBaseEntity;
-                    player.PrintToChat($"Hit: {trace.DidHit()}, Entity: {(val == null ? "null" : val.DesignerName)}, Solid: {trace.AllSolid}, Contents: {(Contents)trace.Contents}");
+                    var val =
+                        Activator.CreateInstance(typeof(CBaseEntity), trace.HitEntity)
+                        as CBaseEntity;
+                    player.PrintToChat(
+                        $"Hit: {trace.DidHit()}, Entity: {(val == null ? "null" : val.DesignerName)}, Solid: {trace.AllSolid}, Contents: {(Contents)trace.Contents}"
+                    );
                 }
                 else
-                    player.PrintToChat($"Hit: {trace.DidHit()}, Entity: {trace.HitEntity}, Solid: {trace.AllSolid}, Contents: {(Contents)trace.Contents}");
+                    player.PrintToChat(
+                        $"Hit: {trace.DidHit()}, Entity: {trace.HitEntity}, Solid: {trace.AllSolid}, Contents: {(Contents)trace.Contents}"
+                    );
             }
 
             if (!trace.HitPlayer(out CCSPlayerController? target) || target == null)
                 return;
 
-            if (target.Handle == player.Handle) return;
-            SkillUtils.TakeHealth(target.PlayerPawn.Value, 9999);
+            if (target.Handle == player.Handle || target.Team == player.Team)
+                return;
+
+            SkillUtils.TakeHealth(target, 9999, player, "weapon_taser");
         }
 
         public static void EnableSkill(CCSPlayerController player)
@@ -86,7 +122,8 @@ namespace src.player.skills
         private static void CreateLine(Vector start, Vector end, Color color)
         {
             CBeam beam = Utilities.CreateEntityByName<CBeam>("beam")!;
-            if (beam == null) return;
+            if (beam == null)
+                return;
 
             beam.Render = color;
             beam.Width = 2.0f;
@@ -101,7 +138,23 @@ namespace src.player.skills
             beam.AcceptInput("FollowEntity", beam, null!, "");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#6effc7", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float maxDistance = 4096f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#6effc7",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float maxDistance = 4096f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float MaxDistance { get; set; } = maxDistance;
         }

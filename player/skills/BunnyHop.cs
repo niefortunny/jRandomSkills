@@ -19,7 +19,9 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     GiveBunnyHop(player);
             }
@@ -28,13 +30,19 @@ namespace src.player.skills
         private static void GiveBunnyHop(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
-            if (JumpBan.bannedPlayers.ContainsKey(playerPawn)) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
+            if (JumpBan.bannedPlayers.ContainsKey(playerPawn))
+                return;
 
             var flags = (PlayerFlags)playerPawn.Flags;
             var buttons = player.Buttons;
 
-            if (buttons.HasFlag(PlayerButtons.Jump) && flags.HasFlag(PlayerFlags.FL_ONGROUND) && !playerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_LADDER))
+            if (
+                buttons.HasFlag(PlayerButtons.Jump)
+                && flags.HasFlag(PlayerFlags.FL_ONGROUND)
+                && !playerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_LADDER)
+            )
             {
                 playerPawn.AbsVelocity.Z = SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
                 var maxSpeed = SkillsInfo.GetValue<float>(skillName, "maxSpeed");
@@ -46,7 +54,10 @@ namespace src.player.skills
 
                 if (speed2D < maxSpeed)
                 {
-                    var newSpeed = Math.Min(speed2D * SkillsInfo.GetValue<float>(skillName, "jumpBoost"), maxSpeed);
+                    var newSpeed = Math.Min(
+                        speed2D * SkillsInfo.GetValue<float>(skillName, "jumpBoost"),
+                        maxSpeed
+                    );
                     scale = newSpeed / (speed2D == 0 ? 1 : speed2D);
                 }
                 else if (speed2D > maxSpeed)
@@ -57,7 +68,25 @@ namespace src.player.skills
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#d1430a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float maxSpeed = 500f, float jumpVelocity = 300f, float jumpBoost = 2f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#d1430a",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float maxSpeed = 500f,
+            float jumpVelocity = 300f,
+            float jumpBoost = 2f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float MaxSpeed { get; set; } = maxSpeed;
             public float JumpVelocity { get; set; } = jumpVelocity;

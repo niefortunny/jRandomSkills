@@ -22,11 +22,19 @@ namespace src.player.skills
             int damage = @event.DmgHealth;
             var hitgroup = (HitGroup_t)@event.Hitgroup;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim)) return;
+            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim))
+                return;
             var victimInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
-            if (victimInfo == null || victimInfo.Skill != skillName) return;
+            if (victimInfo == null || victimInfo.Skill != skillName)
+                return;
 
-            HitGroup_t[] disabledHitbox = [HitGroup_t.HITGROUP_LEFTARM, HitGroup_t.HITGROUP_RIGHTARM, HitGroup_t.HITGROUP_LEFTLEG, HitGroup_t.HITGROUP_RIGHTLEG];
+            HitGroup_t[] disabledHitbox =
+            [
+                HitGroup_t.HITGROUP_LEFTARM,
+                HitGroup_t.HITGROUP_RIGHTARM,
+                HitGroup_t.HITGROUP_LEFTLEG,
+                HitGroup_t.HITGROUP_RIGHTLEG,
+            ];
             if (disabledHitbox.Contains(hitgroup))
                 RestoreHealth(victim!, damage);
         }
@@ -34,7 +42,8 @@ namespace src.player.skills
         private static void RestoreHealth(CCSPlayerController victim, float damage)
         {
             var playerPawn = victim.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
             var newHealth = playerPawn.Health + damage;
 
             if (newHealth > 100)
@@ -44,8 +53,21 @@ namespace src.player.skills
             Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_iHealth");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#9c9c9c", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#9c9c9c",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

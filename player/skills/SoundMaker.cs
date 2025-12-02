@@ -1,9 +1,9 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -26,12 +26,15 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            SkillPlayerInfo.TryAdd(player.SteamID, new PlayerSkillInfo
-            {
-                SteamID = player.SteamID,
-                CanUse = true,
-                Cooldown = DateTime.MinValue,
-            });
+            SkillPlayerInfo.TryAdd(
+                player.SteamID,
+                new PlayerSkillInfo
+                {
+                    SteamID = player.SteamID,
+                    CanUse = true,
+                    Cooldown = DateTime.MinValue,
+                }
+            );
         }
 
         public static void DisableSkill(CCSPlayerController player)
@@ -43,7 +46,8 @@ namespace src.player.skills
         public static void PlayerDeath(EventPlayerDeath @event)
         {
             var player = @event.Userid;
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
             if (playerInfo?.Skill == skillName)
                 SkillPlayerInfo.TryRemove(player.SteamID, out _);
@@ -53,7 +57,9 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
                         UpdateHUD(player, skillInfo);
@@ -65,7 +71,14 @@ namespace src.player.skills
             float cooldown = 0;
             if (skillInfo != null)
             {
-                float time = (int)Math.Ceiling((skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "Cooldown")) - DateTime.Now).TotalSeconds);
+                float time = (int)
+                    Math.Ceiling(
+                        (
+                            skillInfo.Cooldown.AddSeconds(
+                                SkillsInfo.GetValue<float>(skillName, "Cooldown")
+                            ) - DateTime.Now
+                        ).TotalSeconds
+                    );
                 cooldown = Math.Max(time, 0);
 
                 if (cooldown == 0 && skillInfo?.CanUse == false)
@@ -73,22 +86,26 @@ namespace src.player.skills
             }
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             if (cooldown == 0)
                 playerInfo.PrintHTML = null;
             else
-                playerInfo.PrintHTML = $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}";
+                playerInfo.PrintHTML =
+                    $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}";
         }
 
         public static void UseSkill(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn?.CBodyComponent == null) return;
+            if (playerPawn?.CBodyComponent == null)
+                return;
 
             if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
             {
-                if (!player.IsValid || !player.PawnIsAlive) return;
+                if (!player.IsValid || !player.PawnIsAlive)
+                    return;
                 if (skillInfo.CanUse)
                 {
                     skillInfo.CanUse = false;
@@ -101,7 +118,13 @@ namespace src.player.skills
         private static void MakeSound(CCSPlayerController player)
         {
             foreach (var enemy in Utilities.GetPlayers().Where(p => p.Team != player.Team))
-                if (enemy != null && enemy.IsValid && enemy.PawnIsAlive && enemy.PlayerPawn.Value != null && enemy.PlayerPawn.Value.IsValid)
+                if (
+                    enemy != null
+                    && enemy.IsValid
+                    && enemy.PawnIsAlive
+                    && enemy.PlayerPawn.Value != null
+                    && enemy.PlayerPawn.Value.IsValid
+                )
                     enemy.PlayerPawn.Value.EmitSound($"C4.PlantSoundB", volume: 1f);
         }
 
@@ -112,7 +135,23 @@ namespace src.player.skills
             public DateTime Cooldown { get; set; }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#e3ed8c", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float cooldown = 5f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#e3ed8c",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float cooldown = 5f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float Cooldown { get; set; } = cooldown;
         }

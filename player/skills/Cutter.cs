@@ -21,16 +21,37 @@ namespace src.player.skills
             var victim = @event.Userid;
             var weapon = @event.Weapon;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim) || attacker == victim) return;
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (
+                !Instance.IsPlayerValid(attacker)
+                || !Instance.IsPlayerValid(victim)
+                || attacker == victim
+            )
+                return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker?.SteamID
+            );
+            if (playerInfo?.Skill != skillName)
+                return;
 
             if (weapon == "knife")
-                SkillUtils.TakeHealth(victim!.PlayerPawn.Value, 9999);
+                SkillUtils.TakeHealth(victim, 9999);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#88a31a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#88a31a",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

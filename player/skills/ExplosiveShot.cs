@@ -17,16 +17,31 @@ namespace src.player.skills
 
         public static void LoadSkill()
         {
-            SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"), false);
+            SkillUtils.RegisterSkill(
+                skillName,
+                SkillsInfo.GetValue<string>(skillName, "color"),
+                false
+            );
         }
 
         public static void EnableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
-            float newChance = (float)Instance.Random.NextDouble() * (SkillsInfo.GetValue<float>(skillName, "ChanceTo") - SkillsInfo.GetValue<float>(skillName, "ChanceFrom")) + SkillsInfo.GetValue<float>(skillName, "ChanceFrom");
+            if (playerInfo == null)
+                return;
+            float newChance =
+                (float)Instance.Random.NextDouble()
+                    * (
+                        SkillsInfo.GetValue<float>(skillName, "ChanceTo")
+                        - SkillsInfo.GetValue<float>(skillName, "ChanceFrom")
+                    )
+                + SkillsInfo.GetValue<float>(skillName, "ChanceFrom");
             playerInfo.SkillChance = newChance;
-            SkillUtils.PrintToChat(player, $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newChance)}", false);
+            SkillUtils.PrintToChat(
+                player,
+                $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newChance)}",
+                false
+            );
         }
 
         private static void SpawnExplosion(Vector vector)
@@ -37,15 +52,24 @@ namespace src.player.skills
 
         public static void OnEntitySpawned(CEntityInstance entity)
         {
-            if (entity.DesignerName != "hegrenade_projectile") return;
+            if (entity.DesignerName != "hegrenade_projectile")
+                return;
 
             var heProjectile = entity.As<CBaseCSGrenadeProjectile>();
-            if (heProjectile == null || !heProjectile.IsValid || heProjectile.AbsRotation == null) return;
+            if (heProjectile == null || !heProjectile.IsValid || heProjectile.AbsRotation == null)
+                return;
 
             Server.NextFrame(() =>
             {
-                if (heProjectile == null || !heProjectile.IsValid) return;
-                if (!(NearlyEquals(angle.X, heProjectile.AbsRotation.X) && NearlyEquals(angle.Y, heProjectile.AbsRotation.Y) && NearlyEquals(angle.Z, heProjectile.AbsRotation.Z)))
+                if (heProjectile == null || !heProjectile.IsValid)
+                    return;
+                if (
+                    !(
+                        NearlyEquals(angle.X, heProjectile.AbsRotation.X)
+                        && NearlyEquals(angle.Y, heProjectile.AbsRotation.Y)
+                        && NearlyEquals(angle.Z, heProjectile.AbsRotation.Z)
+                    )
+                )
                     return;
 
                 heProjectile.TicksAtZeroVelocity = 100;
@@ -56,16 +80,24 @@ namespace src.player.skills
             });
         }
 
-        private static bool NearlyEquals(float a, float b, float epsilon = 0.001f) => Math.Abs(a -b) < epsilon;
+        private static bool NearlyEquals(float a, float b, float epsilon = 0.001f) =>
+            Math.Abs(a - b) < epsilon;
 
         public static void OnTakeDamage(DynamicHook h)
         {
-            if (lastTick == Server.TickCount) return;
+            if (lastTick == Server.TickCount)
+                return;
 
             CEntityInstance param = h.GetParam<CEntityInstance>(0);
             CTakeDamageInfo param2 = h.GetParam<CTakeDamageInfo>(1);
 
-            if (param == null || param.Entity == null || param2 == null || param2.Attacker == null || param2.Attacker.Value == null)
+            if (
+                param == null
+                || param.Entity == null
+                || param2 == null
+                || param2.Attacker == null
+                || param2.Attacker.Value == null
+            )
                 return;
 
             CCSPlayerPawn attackerPawn = new(param2.Attacker.Value.Handle);
@@ -76,14 +108,36 @@ namespace src.player.skills
                 return;
 
             CCSPlayerController attacker = attackerPawn.Controller.Value.As<CCSPlayerController>();
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker.SteamID);
-            if (playerInfo == null || playerInfo.Skill != skillName) return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker.SteamID
+            );
+            if (playerInfo == null || playerInfo.Skill != skillName)
+                return;
 
             if (Instance.Random.NextDouble() <= playerInfo.SkillChance)
                 SpawnExplosion(param2.DamagePosition);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#9c0000", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float damage = 25f, float damageRadius = 210f, float chanceFrom = .15f, float chanceTo = .3f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#9c0000",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float damage = 25f,
+            float damageRadius = 210f,
+            float chanceFrom = .15f,
+            float chanceTo = .3f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float Damage { get; set; } = damage;
             public float DamageRadius { get; set; } = damageRadius;

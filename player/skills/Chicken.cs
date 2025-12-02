@@ -222,8 +222,8 @@ namespace src.player.skills
 
             chickenModel.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = 1;
             Utilities.SetStateChanged(chickenModel, "CBaseEntity", "m_CBodyComponent");
-            Server.NextFrame(
-                () => chickenModel.AcceptInput("SetScale", chickenModel, chickenModel, "1")
+            Server.NextFrame(() =>
+                chickenModel.AcceptInput("SetScale", chickenModel, chickenModel, "1")
             );
 
             chickenModel.AcceptInput("SetParent", playerPawn, playerPawn, "!activator");

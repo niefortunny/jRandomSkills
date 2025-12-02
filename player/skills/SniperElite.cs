@@ -1,9 +1,9 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -14,10 +14,33 @@ namespace src.player.skills
         private static readonly ConcurrentDictionary<ulong, string> sniperElites = [];
         private static readonly object setLock = new();
 
-        private static readonly string[] rifles = [ "weapon_mp9", "weapon_mac10", "weapon_bizon", "weapon_mp7", "weapon_ump45", "weapon_p90",
-        "weapon_mp5sd", "weapon_famas", "weapon_galilar", "weapon_m4a1", "weapon_m4a1_silencer", "weapon_ak47",
-        "weapon_aug", "weapon_sg553", "weapon_ssg08", "weapon_awp", "weapon_scar20", "weapon_g3sg1",
-        "weapon_nova", "weapon_xm1014", "weapon_mag7", "weapon_sawedoff", "weapon_m249", "weapon_negev" ];
+        private static readonly string[] rifles =
+        [
+            "weapon_mp9",
+            "weapon_mac10",
+            "weapon_bizon",
+            "weapon_mp7",
+            "weapon_ump45",
+            "weapon_p90",
+            "weapon_mp5sd",
+            "weapon_famas",
+            "weapon_galilar",
+            "weapon_m4a1",
+            "weapon_m4a1_silencer",
+            "weapon_ak47",
+            "weapon_aug",
+            "weapon_sg553",
+            "weapon_ssg08",
+            "weapon_awp",
+            "weapon_scar20",
+            "weapon_g3sg1",
+            "weapon_nova",
+            "weapon_xm1014",
+            "weapon_mag7",
+            "weapon_sawedoff",
+            "weapon_m249",
+            "weapon_negev",
+        ];
 
         public static void LoadSkill()
         {
@@ -26,7 +49,6 @@ namespace src.player.skills
 
         public static void NewRound()
         {
-
             lock (setLock)
             {
                 sniperElites.Clear();
@@ -37,7 +59,8 @@ namespace src.player.skills
         public static void PlayerDeath(EventPlayerDeath @event)
         {
             var player = @event.Userid;
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
             if (playerInfo?.Skill == skillName)
                 DisableSkill(player);
@@ -46,7 +69,8 @@ namespace src.player.skills
         public static void WeaponEquip(EventItemEquip @event)
         {
             var player = @event.Userid;
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
             if (playerInfo?.Skill == skillName)
                 DeleteDroppedAWP(player);
@@ -66,7 +90,8 @@ namespace src.player.skills
         public static void UseSkill(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn?.CBodyComponent == null) return;
+            if (playerPawn?.CBodyComponent == null)
+                return;
 
             if (sniperElites.ContainsKey(player.SteamID))
                 RemoveAndGiveWeapon(player);
@@ -85,13 +110,31 @@ namespace src.player.skills
                 if (activeRifle != null && activeRifle.IsValid)
                     RemoveWeapon(player, activeRifle.DesignerName);
 
-                sniperElites.TryAdd(player.SteamID, (activeRifle != null && activeRifle.IsValid) ? SkillUtils.GetDesignerName(activeRifle) : "weapon_awp");
-                Server.NextFrame(() => {
+                sniperElites.TryAdd(
+                    player.SteamID,
+                    (activeRifle != null && activeRifle.IsValid)
+                        ? SkillUtils.GetDesignerName(activeRifle)
+                        : "weapon_awp"
+                );
+                Server.NextFrame(() =>
+                {
                     string weapon = holdedWeapon ?? "weapon_awp";
-                    if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) return;
-                    var createdWeapon = player.PlayerPawn.Value?.ItemServices?.As<CCSPlayer_ItemServices>().GiveNamedItem<CEntityInstance>(weapon);
+                    if (
+                        player == null
+                        || !player.IsValid
+                        || player.PlayerPawn.Value == null
+                        || !player.PlayerPawn.Value.IsValid
+                    )
+                        return;
+                    var createdWeapon = player
+                        .PlayerPawn.Value?.ItemServices?.As<CCSPlayer_ItemServices>()
+                        .GiveNamedItem<CEntityInstance>(weapon);
 
-                    if (createdWeapon != null && createdWeapon.IsValid && createdWeapon.DesignerName == "weapon_awp")
+                    if (
+                        createdWeapon != null
+                        && createdWeapon.IsValid
+                        && createdWeapon.DesignerName == "weapon_awp"
+                    )
                     {
                         lock (setLock)
                         {
@@ -110,12 +153,20 @@ namespace src.player.skills
         private static void DeleteDroppedAWP(CCSPlayerController player)
         {
             var pawn = player.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid) return;
+            if (pawn == null || !pawn.IsValid)
+                return;
             var weaponServices = pawn.WeaponServices;
-            if (weaponServices == null) return;
+            if (weaponServices == null)
+                return;
 
-            ConcurrentBag<uint> playerWeapons = [.. weaponServices.MyWeapons.Where(w => w != null && w.IsValid && w.Value != null && w.Value.IsValid)
-                                                                .Select(w => w.Value!.Index)];
+            ConcurrentBag<uint> playerWeapons =
+            [
+                .. weaponServices
+                    .MyWeapons.Where(w =>
+                        w != null && w.IsValid && w.Value != null && w.Value.IsValid
+                    )
+                    .Select(w => w.Value!.Index),
+            ];
 
             lock (setLock)
             {
@@ -140,29 +191,56 @@ namespace src.player.skills
         {
             CBasePlayerWeapon? rifle = null;
             var pawn = player.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid) return rifle;
+            if (pawn == null || !pawn.IsValid)
+                return rifle;
             var weaponServices = pawn.WeaponServices;
-            if (weaponServices == null) return rifle;
+            if (weaponServices == null)
+                return rifle;
 
             foreach (var weapon in weaponServices.MyWeapons)
-                if (weapon != null && weapon.IsValid && weapon.Value != null && weapon.Value.IsValid)
+                if (
+                    weapon != null
+                    && weapon.IsValid
+                    && weapon.Value != null
+                    && weapon.Value.IsValid
+                )
                     if (rifles.Contains(weapon.Value.DesignerName))
                         rifle = weapon.Value;
             return rifle;
         }
-        
+
         private static void RemoveWeapon(CCSPlayerController player, string designerName)
         {
             var pawn = player.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null) return;
+            if (pawn == null || !pawn.IsValid || pawn.WeaponServices == null)
+                return;
 
             foreach (var item in pawn.WeaponServices.MyWeapons)
-                if (item != null && item.IsValid && item.Value != null && item.Value.IsValid && item.Value.DesignerName == designerName)
+                if (
+                    item != null
+                    && item.IsValid
+                    && item.Value != null
+                    && item.Value.IsValid
+                    && item.Value.DesignerName == designerName
+                )
                     item.Value.AcceptInput("Kill");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#e0873a", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#e0873a",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

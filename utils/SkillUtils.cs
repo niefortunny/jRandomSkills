@@ -25,8 +25,9 @@ namespace src.utils
             IntPtr,
             IntPtr,
             int
-        > HEGrenadeProjectile_CreateFunc =
-            new(GameData.GetSignature("HEGrenadeProjectile_CreateFunc"));
+        > HEGrenadeProjectile_CreateFunc = new(
+            GameData.GetSignature("HEGrenadeProjectile_CreateFunc")
+        );
         private static readonly MemoryFunctionVoid<
             nint,
             float,
@@ -129,8 +130,8 @@ namespace src.utils
 
             playerPawn.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = scale;
             Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_CBodyComponent");
-            Server.NextFrame(
-                () => playerPawn.AcceptInput("SetScale", playerPawn, playerPawn, scale.ToString())
+            Server.NextFrame(() =>
+                playerPawn.AcceptInput("SetScale", playerPawn, playerPawn, scale.ToString())
             );
         }
 
@@ -152,10 +153,17 @@ namespace src.utils
             );
         }
 
-        public static void TakeHealth(CCSPlayerPawn? pawn, int damage)
+        public static void TakeHealth(
+            CCSPlayerController? player,
+            int damage,
+            CCSPlayerController? attacker = null,
+            string? weapon = null
+        )
         {
-            Console.WriteLine($"Pawn LifeState = {(LifeState_t)pawn!.LifeState}");
+            if (player is null || !player.IsValid)
+                return;
 
+            var pawn = player.PlayerPawn.Value;
             if (pawn == null || !pawn.IsValid || pawn.LifeState is not (byte)LifeState_t.LIFE_ALIVE)
                 return;
 
@@ -172,7 +180,12 @@ namespace src.utils
 
             int newHealth = pawn.Health - damage;
             if (newHealth <= 0)
-                Server.NextFrame(() => pawn.CommitSuicide(false, true));
+                Server.NextFrame(() =>
+                {
+                    player.CommitSuicide(false, true);
+                    if (attacker != null && attacker.IsValid && weapon != null)
+                        SendToKillfeed(attacker, player, weapon);
+                });
             else
             {
                 pawn.Health = newHealth;
@@ -529,6 +542,24 @@ namespace src.utils
                 Utilities.SetStateChanged(tTeams, "CCSTeam", "m_scoreSecondHalf");
                 Utilities.SetStateChanged(tTeams, "CCSTeam", "m_scoreOvertime");
             }
+        }
+
+        public static void SendToKillfeed(
+            CCSPlayerController attacker,
+            CCSPlayerController victim,
+            string weapon
+        )
+        {
+            if (!attacker.IsValid || !victim.IsValid)
+                return;
+
+            new EventPlayerDeath(true)
+            {
+                Attacker = attacker,
+                Assister = null,
+                Userid = victim,
+                Weapon = weapon,
+            }.FireEvent(false);
         }
     }
 

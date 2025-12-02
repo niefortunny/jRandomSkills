@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -24,13 +24,18 @@ namespace src.player.skills
             var attacker = @event.Attacker;
             var weapon = @event.Weapon;
 
-            if (weapon != "decoy") return;
-            if (!Instance.IsPlayerValid(victim) || !Instance.IsPlayerValid(attacker)) return;
+            if (weapon != "decoy")
+                return;
+            if (!Instance.IsPlayerValid(victim) || !Instance.IsPlayerValid(attacker))
+                return;
 
-            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker?.SteamID);
-            if (attackerInfo?.Skill != skillName) return;
+            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker?.SteamID
+            );
+            if (attackerInfo?.Skill != skillName)
+                return;
 
-            SkillUtils.TakeHealth(victim!.PlayerPawn.Value, SkillsInfo.GetValue<int>(skillName, "damageDeal"));
+            SkillUtils.TakeHealth(victim, SkillsInfo.GetValue<int>(skillName, "damageDeal"));
         }
 
         public static void OnEntitySpawned(CEntityInstance entity)
@@ -40,25 +45,43 @@ namespace src.player.skills
                 return;
 
             var decoy = entity.As<CDecoyProjectile>();
-            if (decoy == null || !decoy.IsValid || decoy.OwnerEntity == null || decoy.OwnerEntity.Value == null || !decoy.OwnerEntity.Value.IsValid) return;
+            if (
+                decoy == null
+                || !decoy.IsValid
+                || decoy.OwnerEntity == null
+                || decoy.OwnerEntity.Value == null
+                || !decoy.OwnerEntity.Value.IsValid
+            )
+                return;
 
             var pawn = decoy.OwnerEntity.Value.As<CCSPlayerPawn>();
-            if (pawn == null || !pawn.IsValid || pawn.Controller == null || pawn.Controller.Value == null || !pawn.Controller.Value.IsValid) return;
+            if (
+                pawn == null
+                || !pawn.IsValid
+                || pawn.Controller == null
+                || pawn.Controller.Value == null
+                || !pawn.Controller.Value.IsValid
+            )
+                return;
 
             var player = pawn.Controller.Value.As<CCSPlayerController>();
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
             decoys.TryAdd(decoy, 0);
         }
 
         public static void DecoyStarted(EventDecoyStarted @event)
         {
             var player = @event.Userid;
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
             var decoy = decoys.FirstOrDefault(d => d.Key.Index == @event.Entityid).Key;
             if (decoy != null && decoy.IsValid)
@@ -75,10 +98,14 @@ namespace src.player.skills
                     continue;
                 }
                 decoy.Bounces = 0;
-                if (Server.TickCount % 8 != 0) continue;
+                if (Server.TickCount % 8 != 0)
+                    continue;
                 var vel = decoy.AbsVelocity;
                 float speed = vel.Length();
-                float targetSpeed = Math.Min(speed * SkillsInfo.GetValue<float>(skillName, "speedMultipier"), SkillsInfo.GetValue<float>(skillName, "maxSpeed"));
+                float targetSpeed = Math.Min(
+                    speed * SkillsInfo.GetValue<float>(skillName, "speedMultipier"),
+                    SkillsInfo.GetValue<float>(skillName, "maxSpeed")
+                );
 
                 if (speed > .01f)
                 {
@@ -97,7 +124,25 @@ namespace src.player.skills
             SkillUtils.TryGiveWeapon(player, CsItem.DecoyGrenade);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#2effc7", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float speedMultipier = 2f, float maxSpeed = 900f, int damageDeal = 9999) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#2effc7",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float speedMultipier = 2f,
+            float maxSpeed = 900f,
+            int damageDeal = 9999
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float SpeedMultipier { get; set; } = speedMultipier;
             public float MaxSpeed { get; set; } = maxSpeed;

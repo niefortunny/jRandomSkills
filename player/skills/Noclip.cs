@@ -1,9 +1,9 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -28,7 +28,9 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
                         UpdateHUD(player, skillInfo);
@@ -37,14 +39,17 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            SkillPlayerInfo.TryAdd(player.SteamID, new PlayerSkillInfo
-            {
-                SteamID = player.SteamID,
-                CanUse = true,
-                IsFlying = false,
-                Cooldown = DateTime.MinValue,
-                LastPosition = null,
-            });
+            SkillPlayerInfo.TryAdd(
+                player.SteamID,
+                new PlayerSkillInfo
+                {
+                    SteamID = player.SteamID,
+                    CanUse = true,
+                    IsFlying = false,
+                    Cooldown = DateTime.MinValue,
+                    LastPosition = null,
+                }
+            );
         }
 
         public static void DisableSkill(CCSPlayerController player)
@@ -59,10 +64,22 @@ namespace src.player.skills
             float flying = 0;
             if (skillInfo != null)
             {
-                float time = (int)Math.Ceiling((skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "cooldown")) - DateTime.Now).TotalSeconds);
+                float time = (int)
+                    Math.Ceiling(
+                        (
+                            skillInfo.Cooldown.AddSeconds(
+                                SkillsInfo.GetValue<float>(skillName, "cooldown")
+                            ) - DateTime.Now
+                        ).TotalSeconds
+                    );
                 cooldown = Math.Max(time, 0);
 
-                float flyingTime = (int)(skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "duration")) - DateTime.Now).TotalMilliseconds;
+                float flyingTime = (int)
+                    (
+                        skillInfo.Cooldown.AddSeconds(
+                            SkillsInfo.GetValue<float>(skillName, "duration")
+                        ) - DateTime.Now
+                    ).TotalMilliseconds;
                 flying = Math.Max(flyingTime, 0);
 
                 if (cooldown == 0 && skillInfo?.CanUse == false)
@@ -70,7 +87,8 @@ namespace src.player.skills
             }
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             if (cooldown == 0)
             {
@@ -88,47 +106,91 @@ namespace src.player.skills
         {
             var playerPawn = player.PlayerPawn.Value;
             var duration = SkillsInfo.GetValue<float>(skillName, "duration");
-            if (playerPawn?.CBodyComponent == null) return;
+            if (playerPawn?.CBodyComponent == null)
+                return;
 
             if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
             {
-                if (!player.IsValid || !player.PawnIsAlive) return;
+                if (!player.IsValid || !player.PawnIsAlive)
+                    return;
                 if (skillInfo.CanUse)
                 {
                     skillInfo.CanUse = false;
                     skillInfo.IsFlying = true;
                     skillInfo.Cooldown = DateTime.Now;
-                    skillInfo.LastPosition = playerPawn.AbsOrigin == null ? null : new Vector(playerPawn.AbsOrigin.X, playerPawn.AbsOrigin.Y, playerPawn.AbsOrigin.Z);
+                    skillInfo.LastPosition =
+                        playerPawn.AbsOrigin == null
+                            ? null
+                            : new Vector(
+                                playerPawn.AbsOrigin.X,
+                                playerPawn.AbsOrigin.Y,
+                                playerPawn.AbsOrigin.Z
+                            );
 
                     playerPawn.ActualMoveType = MoveType_t.MOVETYPE_NOCLIP;
-                    Instance.AddTimer(duration, () => {
-                        if (playerPawn == null || !playerPawn.IsValid || !skillInfo.IsFlying) return;
-                        skillInfo.IsFlying = false;
-                        playerPawn.ActualMoveType = MoveType_t.MOVETYPE_WALK;
-                    });
+                    Instance.AddTimer(
+                        duration,
+                        () =>
+                        {
+                            if (playerPawn == null || !playerPawn.IsValid || !skillInfo.IsFlying)
+                                return;
+                            skillInfo.IsFlying = false;
+                            playerPawn.ActualMoveType = MoveType_t.MOVETYPE_WALK;
+                        }
+                    );
 
-                    Instance.AddTimer(duration + 4, () => {
-                        if (playerPawn == null || !playerPawn.IsValid || !player.PawnIsAlive || skillInfo.IsFlying) return;
-                        if (skillInfo.LastPosition == null || playerPawn.AbsOrigin == null) return;
-                        skillInfo.IsFlying = false;
-                        var diff = Math.Abs(playerPawn.AbsOrigin.Z - skillInfo.LastPosition.Z);
-                        if (diff > 3000 && playerPawn.AbsOrigin.Z < skillInfo.LastPosition.Z)
-                            playerPawn.Teleport(skillInfo.LastPosition, null, new Vector(0,0,0));
-                    });
+                    Instance.AddTimer(
+                        duration + 4,
+                        () =>
+                        {
+                            if (
+                                playerPawn == null
+                                || !playerPawn.IsValid
+                                || !player.PawnIsAlive
+                                || skillInfo.IsFlying
+                            )
+                                return;
+                            if (skillInfo.LastPosition == null || playerPawn.AbsOrigin == null)
+                                return;
+                            skillInfo.IsFlying = false;
+                            var diff = Math.Abs(playerPawn.AbsOrigin.Z - skillInfo.LastPosition.Z);
+                            if (diff > 3000 && playerPawn.AbsOrigin.Z < skillInfo.LastPosition.Z)
+                                playerPawn.Teleport(
+                                    skillInfo.LastPosition,
+                                    null,
+                                    new Vector(0, 0, 0)
+                                );
+                        }
+                    );
                 }
                 else if (skillInfo.IsFlying)
                 {
                     skillInfo.IsFlying = false;
                     playerPawn.ActualMoveType = MoveType_t.MOVETYPE_WALK;
 
-                    Instance.AddTimer(4, () => {
-                        if (playerPawn == null || !playerPawn.IsValid || !player.PawnIsAlive || skillInfo.IsFlying) return;
-                        if (skillInfo.LastPosition == null || playerPawn.AbsOrigin == null) return;
-                        skillInfo.IsFlying = false;
-                        var diff = Math.Abs(playerPawn.AbsOrigin.Z - skillInfo.LastPosition.Z);
-                        if (diff > 3000 && playerPawn.AbsOrigin.Z < skillInfo.LastPosition.Z)
-                            playerPawn.Teleport(skillInfo.LastPosition, null, new Vector(0, 0, 0));
-                    });
+                    Instance.AddTimer(
+                        4,
+                        () =>
+                        {
+                            if (
+                                playerPawn == null
+                                || !playerPawn.IsValid
+                                || !player.PawnIsAlive
+                                || skillInfo.IsFlying
+                            )
+                                return;
+                            if (skillInfo.LastPosition == null || playerPawn.AbsOrigin == null)
+                                return;
+                            skillInfo.IsFlying = false;
+                            var diff = Math.Abs(playerPawn.AbsOrigin.Z - skillInfo.LastPosition.Z);
+                            if (diff > 3000 && playerPawn.AbsOrigin.Z < skillInfo.LastPosition.Z)
+                                playerPawn.Teleport(
+                                    skillInfo.LastPosition,
+                                    null,
+                                    new Vector(0, 0, 0)
+                                );
+                        }
+                    );
                 }
             }
         }
@@ -142,7 +204,24 @@ namespace src.player.skills
             public Vector? LastPosition { get; set; }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#44ebd4", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, float cooldown = 30f, float duration = 2f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#44ebd4",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = true,
+            bool needsTeammates = false,
+            float cooldown = 30f,
+            float duration = 2f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float Cooldown { get; set; } = cooldown;
             public float Duration { get; set; } = duration;

@@ -17,7 +17,10 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            int healthBonus = Instance.Random.Next(SkillsInfo.GetValue<int>(skillName, "minExtraHealth"), SkillsInfo.GetValue<int>(skillName, "maxExtraHealth"));
+            int healthBonus = Instance.Random.Next(
+                SkillsInfo.GetValue<int>(skillName, "minExtraHealth"),
+                SkillsInfo.GetValue<int>(skillName, "maxExtraHealth")
+            );
             AddHealth(player, healthBonus);
         }
 
@@ -29,7 +32,8 @@ namespace src.player.skills
         public static void AddHealth(CCSPlayerController player, int health)
         {
             var pawn = player.PlayerPawn?.Value;
-            if (pawn == null) return;
+            if (pawn == null)
+                return;
 
             pawn.MaxHealth = Math.Min(pawn.Health + health, 1000);
             Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iMaxHealth");
@@ -41,7 +45,8 @@ namespace src.player.skills
         public static void ResetHealth(CCSPlayerController player)
         {
             var pawn = player.PlayerPawn?.Value;
-            if (pawn == null) return;
+            if (pawn == null)
+                return;
 
             pawn.MaxHealth = 100;
             Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iMaxHealth");
@@ -50,7 +55,24 @@ namespace src.player.skills
             Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#009905", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, int minExtraHealth = 50, int maxExtraHealth = 501) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#009905",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int minExtraHealth = 50,
+            int maxExtraHealth = 501
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int MinExtraHealth { get; set; } = minExtraHealth;
             public int MaxExtraHealth { get; set; } = maxExtraHealth;

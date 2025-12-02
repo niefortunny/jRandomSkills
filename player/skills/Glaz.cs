@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using src.utils;
-using System.Collections.Concurrent;
 using static src.jRandomSkills;
 
 namespace src.player.skills
@@ -12,7 +12,7 @@ namespace src.player.skills
     public class Glaz : ISkill
     {
         private const Skills skillName = Skills.Glaz;
-        private readonly static ConcurrentDictionary<int, byte> smokes = [];
+        private static readonly ConcurrentDictionary<int, byte> smokes = [];
         private static readonly object setLock = new();
 
         public static void LoadSkill()
@@ -40,13 +40,24 @@ namespace src.player.skills
         {
             foreach (var (info, player) in infoList)
             {
-                if (player == null) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (player == null)
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
 
-                var observedPlayer = Utilities.GetPlayers().FirstOrDefault(p => p?.Pawn?.Value?.Handle == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle);
-                var observerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == observedPlayer?.SteamID);
+                var observedPlayer = Utilities
+                    .GetPlayers()
+                    .FirstOrDefault(p =>
+                        p?.Pawn?.Value?.Handle
+                        == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle
+                    );
+                var observerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == observedPlayer?.SteamID
+                );
 
-                if (playerInfo?.Skill != skillName && observerInfo?.Skill != skillName) continue;
+                if (playerInfo?.Skill != skillName && observerInfo?.Skill != skillName)
+                    continue;
                 foreach (var smoke in smokes.Keys)
                     info.TransmitEntities.Remove(smoke);
             }
@@ -58,8 +69,21 @@ namespace src.player.skills
             SkillUtils.TryGiveWeapon(player, CsItem.SmokeGrenade);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#5d00ff", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#5d00ff",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

@@ -1,9 +1,9 @@
+using System.Collections.Concurrent;
+using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using src.utils;
-using System.Collections.Concurrent;
-using System.Drawing;
 using static src.jRandomSkills;
 
 namespace src.player.skills
@@ -13,7 +13,9 @@ namespace src.player.skills
         private const Skills skillName = Skills.Jester;
         private static bool jesterMode = false;
         private static bool jesterStarted = false;
+
         public static bool GetJesterMode() => jesterMode;
+
         private static readonly ConcurrentBag<CCSPlayerController> jesters = [];
 
         public static void LoadSkill()
@@ -33,18 +35,21 @@ namespace src.player.skills
         public static void DisableSkill(CCSPlayerController player)
         {
             SkillUtils.ResetPrintHTML(player);
-            if (player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) return;
+            if (player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid)
+                return;
             SetPlayerColor(player.PlayerPawn.Value, true);
         }
 
         public static void PlayerHurt(EventPlayerHurt @event)
         {
-            if (!jesterMode) return;
+            if (!jesterMode)
+                return;
             var attacker = @event.Attacker;
             var victim = @event.Userid;
             int hitgroup = @event.Hitgroup;
 
-            if (!Instance.IsPlayerValid(victim)) return;
+            if (!Instance.IsPlayerValid(victim))
+                return;
             var victimInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
 
             if (!Instance.IsPlayerValid(attacker))
@@ -54,7 +59,9 @@ namespace src.player.skills
                 return;
             }
 
-            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker?.SteamID);
+            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker?.SteamID
+            );
             if (attackerInfo?.Skill == skillName || victimInfo?.Skill == skillName)
                 RestoreHealth(victim!, @event.DmgHealth);
         }
@@ -62,7 +69,8 @@ namespace src.player.skills
         private static void RestoreHealth(CCSPlayerController victim, float damage)
         {
             var playerPawn = victim.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
             var newHealth = playerPawn.Health + damage;
 
             if (newHealth > 100)
@@ -90,8 +98,16 @@ namespace src.player.skills
                 jesterMode = !jesterMode;
                 foreach (var player in Utilities.GetPlayers().Where(p => !p.IsBot && p.PawnIsAlive))
                 {
-                    if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) continue;
-                    var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
+                    if (
+                        player == null
+                        || !player.IsValid
+                        || player.PlayerPawn.Value == null
+                        || !player.PlayerPawn.Value.IsValid
+                    )
+                        continue;
+                    var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                        p.SteamID == player?.SteamID
+                    );
                     if (playerInfo?.Skill == skillName)
                     {
                         SetPlayerColor(player.PlayerPawn.Value);
@@ -107,18 +123,30 @@ namespace src.player.skills
 
         private static void SetPlayerColor(CCSPlayerPawn pawn, bool forceDisable = false)
         {
-            var color = jesterMode && !forceDisable ? Color.FromArgb(255, 128, 0, 128) : Color.FromArgb(255, 255, 255, 255);
+            var color =
+                jesterMode && !forceDisable
+                    ? Color.FromArgb(255, 128, 0, 128)
+                    : Color.FromArgb(255, 255, 255, 255);
             pawn.Render = color;
             Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
         }
 
         public static void OnTick()
         {
-            if (SkillUtils.IsFreezeTime()) return;
+            if (SkillUtils.IsFreezeTime())
+                return;
             foreach (var player in Utilities.GetPlayers().Where(p => !p.IsBot && p.PawnIsAlive))
             {
-                if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
+                if (
+                    player == null
+                    || !player.IsValid
+                    || player.PlayerPawn.Value == null
+                    || !player.PlayerPawn.Value.IsValid
+                )
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player?.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     UpdateHUD(player);
             }
@@ -127,11 +155,30 @@ namespace src.player.skills
         private static void UpdateHUD(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
-            playerInfo.PrintHTML = $"{player.GetTranslation("jester_mode")}: <font color='{(jesterMode ? "#00ff00" : "#ff0000")}'>{player.GetTranslation(jesterMode ? "jester_on" : "jester_off")}</font>";
+            if (playerInfo == null)
+                return;
+            playerInfo.PrintHTML =
+                $"{player.GetTranslation("jester_mode")}: <font color='{(jesterMode ? "#00ff00" : "#ff0000")}'>{player.GetTranslation(jesterMode ? "jester_on" : "jester_off")}</font>";
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#8f108f", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float minTime = 10f, float maxTime = 25f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#8f108f",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float minTime = 10f,
+            float maxTime = 25f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float MinTime { get; set; } = minTime;
             public float MaxTime { get; set; } = maxTime;

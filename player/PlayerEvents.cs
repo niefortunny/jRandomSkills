@@ -17,8 +17,11 @@ namespace src.player
     {
         private static DateTime freezeTimeEnd = DateTime.MinValue;
         private static bool isTransmitRegistered = false;
-        public static readonly jSkill_SkillInfo noneSkill =
-            new(Skills.None, SkillsInfo.GetValue<string>(Skills.None, "color"), false);
+        public static readonly jSkill_SkillInfo noneSkill = new(
+            Skills.None,
+            SkillsInfo.GetValue<string>(Skills.None, "color"),
+            false
+        );
 
         private static jSkill_SkillInfo ctSkill = noneSkill;
         private static jSkill_SkillInfo tSkill = noneSkill;
@@ -548,10 +551,12 @@ namespace src.player
                 );
                 if (playerInfo == null || playerInfo.IsDrawing)
                     return HookResult.Continue;
+
                 Instance.SkillAction(playerInfo.Skill.ToString(), "DisableSkill", [victim]);
 
                 if (victim == attacker)
                     return HookResult.Continue;
+
                 if (Config.LoadedConfig.KillerSkillInfo)
                 {
                     var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
@@ -708,7 +713,6 @@ namespace src.player
                     if (player == null)
                         continue;
                     var teammates = validPlayers.Where(p => p.Team == player.Team && p != player);
-                    string teammateSkills = "";
 
                     var skillPlayer = Instance?.SkillPlayer.FirstOrDefault(p =>
                         p.SteamID == player.SteamID

@@ -19,35 +19,73 @@ namespace src.player.skills
         public static void BombPlanted(EventBombPlanted @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
-            var plantedBomb = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault();
+            var plantedBomb = Utilities
+                .FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4")
+                .FirstOrDefault();
             if (plantedBomb != null)
-                Server.NextFrame(() => plantedBomb.C4Blow = (float)Server.EngineTime + SkillsInfo.GetValue<int>(skillName, "extraC4BlowTime"));
+                Server.NextFrame(() =>
+                    plantedBomb.C4Blow =
+                        (float)Server.EngineTime
+                        + SkillsInfo.GetValue<int>(skillName, "extraC4BlowTime")
+                );
         }
 
         public static void DisableSkill(CCSPlayerController player)
         {
-            if (!Instance.IsPlayerValid(player)) return;
-            Schema.SetSchemaValue<bool>(player!.PlayerPawn.Value!.Handle, "CCSPlayerPawn", "m_bInBombZone", false);
+            if (!Instance.IsPlayerValid(player))
+                return;
+            Schema.SetSchemaValue<bool>(
+                player!.PlayerPawn.Value!.Handle,
+                "CCSPlayerPawn",
+                "m_bInBombZone",
+                false
+            );
         }
 
         public static void OnTick()
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (!Instance.IsPlayerValid(player))
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
 
                 if (playerInfo?.Skill == skillName)
-                    Schema.SetSchemaValue<bool>(player!.PlayerPawn.Value!.Handle, "CCSPlayerPawn", "m_bInBombZone", true);
+                    Schema.SetSchemaValue<bool>(
+                        player!.PlayerPawn.Value!.Handle,
+                        "CCSPlayerPawn",
+                        "m_bInBombZone",
+                        true
+                    );
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#7d7d7d", CsTeam onlyTeam = CsTeam.Terrorist, bool disableOnFreezeTime = true, bool needsTeammates = false, int extraC4BlowTime = 60) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#7d7d7d",
+            CsTeam onlyTeam = CsTeam.Terrorist,
+            bool disableOnFreezeTime = true,
+            bool needsTeammates = false,
+            int extraC4BlowTime = 60
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int ExtraC4BlowTime { get; set; } = extraC4BlowTime;
         }

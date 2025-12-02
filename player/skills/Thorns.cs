@@ -19,16 +19,44 @@ namespace src.player.skills
             var attacker = @event.Attacker;
             var victim = @event.Userid;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim) || attacker == victim) return;
+            if (
+                !Instance.IsPlayerValid(attacker)
+                || !Instance.IsPlayerValid(victim)
+                || attacker == victim
+            )
+                return;
             var victimInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
             if (victimInfo?.Skill == skillName && victim!.PawnIsAlive && attacker!.PawnIsAlive)
             {
-                SkillUtils.TakeHealth(attacker.PlayerPawn.Value, (int)(@event.DmgHealth * SkillsInfo.GetValue<float>(skillName, "healthTakenScale")));
+                SkillUtils.TakeHealth(
+                    attacker,
+                    (int)(
+                        @event.DmgHealth * SkillsInfo.GetValue<float>(skillName, "healthTakenScale")
+                    ),
+                    victim,
+                    "weapon_armor"
+                );
                 attacker.EmitSound("Player.DamageBody.Onlooker");
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#962631", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float healthTakenScale = .3f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#962631",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float healthTakenScale = .3f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float HealthTakenScale { get; set; } = healthTakenScale;
         }

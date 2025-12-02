@@ -18,22 +18,43 @@ namespace src.player.skills
         public static void BombBeginplant(EventBombBeginplant @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
 
             var anyChillOut = Instance.SkillPlayer.FirstOrDefault(p => p.Skill == skillName);
             if (anyChillOut != null)
             {
-                var bombEntities = Utilities.FindAllEntitiesByDesignerName<CC4>("weapon_c4").ToList();
+                var bombEntities = Utilities
+                    .FindAllEntitiesByDesignerName<CC4>("weapon_c4")
+                    .ToList();
                 if (bombEntities.Count != 0)
                 {
                     var bomb = bombEntities.FirstOrDefault();
                     if (bomb != null)
-                        bomb.ArmedTime = Server.CurrentTime + SkillsInfo.GetValue<float>(skillName, "bombArmedTime");
+                        bomb.ArmedTime =
+                            Server.CurrentTime
+                            + SkillsInfo.GetValue<float>(skillName, "bombArmedTime");
                 }
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#343deb", CsTeam onlyTeam = CsTeam.CounterTerrorist, bool disableOnFreezeTime = false, bool needsTeammates = false, float bombArmedTime = 10f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#343deb",
+            CsTeam onlyTeam = CsTeam.CounterTerrorist,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float bombArmedTime = 10f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float BombArmedTime { get; set; } = bombArmedTime;
         }

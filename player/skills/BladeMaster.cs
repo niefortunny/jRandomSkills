@@ -9,7 +9,16 @@ namespace src.player.skills
     public class BladeMaster : ISkill
     {
         private const Skills skillName = Skills.BladeMaster;
-        private static readonly string[] noReflectionWeapon = ["inferno", "flashbang", "smokegrenade", "decoy", "hegrenade", "knife", "taser"];
+        private static readonly string[] noReflectionWeapon =
+        [
+            "inferno",
+            "flashbang",
+            "smokegrenade",
+            "decoy",
+            "hegrenade",
+            "knife",
+            "taser",
+        ];
 
         public static void LoadSkill()
         {
@@ -20,20 +29,35 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
+                if (!Instance.IsPlayerValid(player))
+                    continue;
 
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-                if (playerInfo?.Skill != skillName) continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
+                if (playerInfo?.Skill != skillName)
+                    continue;
 
                 var playerPawn = player.PlayerPawn?.Value;
-                if (playerPawn == null || !playerPawn.IsValid || playerPawn.VelocityModifier == 0) continue;
+                if (playerPawn == null || !playerPawn.IsValid || playerPawn.VelocityModifier == 0)
+                    continue;
 
                 var weaponServices = playerPawn.WeaponServices;
-                if (weaponServices == null) return;
-                if (weaponServices.ActiveWeapon == null || !weaponServices.ActiveWeapon.IsValid || weaponServices.ActiveWeapon.Value == null || !weaponServices.ActiveWeapon.Value.IsValid || weaponServices.ActiveWeapon.Value.DesignerName != "weapon_knife")
+                if (weaponServices == null)
+                    return;
+                if (
+                    weaponServices.ActiveWeapon == null
+                    || !weaponServices.ActiveWeapon.IsValid
+                    || weaponServices.ActiveWeapon.Value == null
+                    || !weaponServices.ActiveWeapon.Value.IsValid
+                    || weaponServices.ActiveWeapon.Value.DesignerName != "weapon_knife"
+                )
                     return;
 
-                playerPawn.VelocityModifier = SkillsInfo.GetValue<float>(skillName, "velocityModifier");
+                playerPawn.VelocityModifier = SkillsInfo.GetValue<float>(
+                    skillName,
+                    "velocityModifier"
+                );
             }
         }
 
@@ -44,9 +68,11 @@ namespace src.player.skills
             HitGroup_t hitGroup = (HitGroup_t)@event.Hitgroup;
             string weapon = @event.Weapon;
 
-            if (noReflectionWeapon.Contains(weapon) || !Instance.IsPlayerValid(victim)) return;
+            if (noReflectionWeapon.Contains(weapon) || !Instance.IsPlayerValid(victim))
+                return;
             var victimInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
-            if (victimInfo == null || victimInfo.Skill != skillName) return;
+            if (victimInfo == null || victimInfo.Skill != skillName)
+                return;
 
             int chance = Instance.Random.Next(0, 101);
             if (hitGroup == HitGroup_t.HITGROUP_LEFTLEG || hitGroup == HitGroup_t.HITGROUP_RIGHTLEG)
@@ -54,16 +80,23 @@ namespace src.player.skills
                 if (chance > SkillsInfo.GetValue<float>(skillName, "legReflectionChance") * 100)
                     return;
             }
-            else
-                if (chance > SkillsInfo.GetValue<float>(skillName, "torseReflectionChance") * 100)
-                    return;
+            else if (chance > SkillsInfo.GetValue<float>(skillName, "torseReflectionChance") * 100)
+                return;
 
             var pawn = victim!.PlayerPawn.Value;
-            if (pawn == null || !pawn.IsValid) return;
+            if (pawn == null || !pawn.IsValid)
+                return;
 
             var weaponServices = pawn.WeaponServices;
-            if (weaponServices == null) return;
-            if (weaponServices.ActiveWeapon == null || !weaponServices.ActiveWeapon.IsValid || weaponServices.ActiveWeapon.Value == null || !weaponServices.ActiveWeapon.Value.IsValid || weaponServices.ActiveWeapon.Value.DesignerName != "weapon_knife")
+            if (weaponServices == null)
+                return;
+            if (
+                weaponServices.ActiveWeapon == null
+                || !weaponServices.ActiveWeapon.IsValid
+                || weaponServices.ActiveWeapon.Value == null
+                || !weaponServices.ActiveWeapon.Value.IsValid
+                || weaponServices.ActiveWeapon.Value.DesignerName != "weapon_knife"
+            )
                 return;
 
             RestoreHealth(victim, damage);
@@ -72,7 +105,12 @@ namespace src.player.skills
         private static void RestoreHealth(CCSPlayerController victim, float damage)
         {
             var playerPawn = victim.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid || playerPawn.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
+            if (
+                playerPawn == null
+                || !playerPawn.IsValid
+                || playerPawn.LifeState != (byte)LifeState_t.LIFE_ALIVE
+            )
+                return;
             var newHealth = playerPawn.Health + damage;
 
             if (newHealth > 100)
@@ -82,7 +120,25 @@ namespace src.player.skills
             Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_iHealth");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#cc7504", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float torseReflectionChance = .95f, float legReflectionChance = .80f, float velocityModifier = .85f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#cc7504",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float torseReflectionChance = .95f,
+            float legReflectionChance = .80f,
+            float velocityModifier = .85f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float TorseReflectionChance { get; set; } = torseReflectionChance;
             public float LegReflectionChance { get; set; } = legReflectionChance;

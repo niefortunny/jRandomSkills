@@ -18,8 +18,12 @@ namespace src.player.skills
         public static void EnableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
-            int moneyBonus = Instance.Random.Next(SkillsInfo.GetValue<int>(skillName, "minMoney"), SkillsInfo.GetValue<int>(skillName, "maxMoney"));
+            if (playerInfo == null)
+                return;
+            int moneyBonus = Instance.Random.Next(
+                SkillsInfo.GetValue<int>(skillName, "minMoney"),
+                SkillsInfo.GetValue<int>(skillName, "maxMoney")
+            );
             playerInfo.SkillChance = moneyBonus;
             AddMoney(player, moneyBonus);
         }
@@ -27,22 +31,42 @@ namespace src.player.skills
         public static void DisableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
             AddMoney(player, -(int)(playerInfo.SkillChance ?? 0));
             playerInfo.SkillChance = 0;
         }
 
         private static void AddMoney(CCSPlayerController player, int money)
         {
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var moneyServices = player.InGameMoneyServices;
-            if (moneyServices == null) return;
+            if (moneyServices == null)
+                return;
 
             moneyServices.Account = Math.Min(Math.Max(moneyServices.Account + money, 0), 16000);
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#D4AF37", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, int minMoney = 5000, int maxMoney = 15000) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#D4AF37",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int minMoney = 5000,
+            int maxMoney = 15000
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int MinMoney { get; set; } = minMoney;
             public int MaxMoney { get; set; } = maxMoney;

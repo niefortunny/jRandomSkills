@@ -22,22 +22,31 @@ namespace src.player.skills
             int damage = @event.DmgHealth;
             string weapon = @event.Weapon;
 
-            if (weapon != "inferno" || !Instance.IsPlayerValid(victim)) return;
+            if (weapon != "inferno" || !Instance.IsPlayerValid(victim))
+                return;
             var victimInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
-            if (victimInfo == null || victimInfo.Skill != skillName) return ;
+            if (victimInfo == null || victimInfo.Skill != skillName)
+                return;
 
-            RestoreHealth(victim!, damage * SkillsInfo.GetValue<float>(skillName, "regenerationMultiplier"));
+            RestoreHealth(
+                victim!,
+                damage * SkillsInfo.GetValue<float>(skillName, "regenerationMultiplier")
+            );
         }
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            SkillUtils.TryGiveWeapon(player, player.Team == CsTeam.CounterTerrorist ? CsItem.IncendiaryGrenade : CsItem.Molotov);
+            SkillUtils.TryGiveWeapon(
+                player,
+                player.Team == CsTeam.CounterTerrorist ? CsItem.IncendiaryGrenade : CsItem.Molotov
+            );
         }
 
         private static void RestoreHealth(CCSPlayerController victim, float damage)
         {
             var playerPawn = victim.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
             var newHealth = playerPawn.Health + damage;
 
             if (newHealth > 100)
@@ -47,7 +56,23 @@ namespace src.player.skills
             Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_iHealth");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#3c47de", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float regenerationMultiplier = 1.5f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#3c47de",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float regenerationMultiplier = 1.5f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float RegenerationMultiplier { get; set; } = regenerationMultiplier;
         }

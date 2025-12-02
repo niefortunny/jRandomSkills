@@ -12,17 +12,32 @@ namespace src.player.skills
 
         public static void LoadSkill()
         {
-            SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"), false);
+            SkillUtils.RegisterSkill(
+                skillName,
+                SkillsInfo.GetValue<string>(skillName, "color"),
+                false
+            );
         }
 
         public static void EnableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
-            float newScale = (float)Instance.Random.NextDouble() * (SkillsInfo.GetValue<float>(skillName, "ChanceTo") - SkillsInfo.GetValue<float>(skillName, "ChanceFrom")) + SkillsInfo.GetValue<float>(skillName, "ChanceFrom");
+            if (playerInfo == null)
+                return;
+            float newScale =
+                (float)Instance.Random.NextDouble()
+                    * (
+                        SkillsInfo.GetValue<float>(skillName, "ChanceTo")
+                        - SkillsInfo.GetValue<float>(skillName, "ChanceFrom")
+                    )
+                + SkillsInfo.GetValue<float>(skillName, "ChanceFrom");
             playerInfo.SkillChance = newScale;
             newScale = (float)Math.Round(newScale, 2);
-            SkillUtils.PrintToChat(player, $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newScale)}", false);
+            SkillUtils.PrintToChat(
+                player,
+                $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newScale)}",
+                false
+            );
         }
 
         public static void OnTakeDamage(DynamicHook h)
@@ -30,7 +45,13 @@ namespace src.player.skills
             CEntityInstance param = h.GetParam<CEntityInstance>(0);
             CTakeDamageInfo param2 = h.GetParam<CTakeDamageInfo>(1);
 
-            if (param == null || param.Entity == null || param2 == null || param2.Attacker == null || param2.Attacker.Value == null)
+            if (
+                param == null
+                || param.Entity == null
+                || param2 == null
+                || param2.Attacker == null
+                || param2.Attacker.Value == null
+            )
                 return;
 
             CCSPlayerPawn attackerPawn = new(param2.Attacker.Value.Handle);
@@ -39,14 +60,22 @@ namespace src.player.skills
             if (attackerPawn.DesignerName != "player" || victimPawn.DesignerName != "player")
                 return;
 
-            if (attackerPawn == null || attackerPawn.Controller?.Value == null || victimPawn == null || victimPawn.Controller?.Value == null)
+            if (
+                attackerPawn == null
+                || attackerPawn.Controller?.Value == null
+                || victimPawn == null
+                || victimPawn.Controller?.Value == null
+            )
                 return;
 
             CCSPlayerController attacker = attackerPawn.Controller.Value.As<CCSPlayerController>();
             CCSPlayerController victim = victimPawn.Controller.Value.As<CCSPlayerController>();
 
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker.SteamID);
-            if (playerInfo == null) return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker.SteamID
+            );
+            if (playerInfo == null)
+                return;
 
             if (playerInfo.Skill == skillName && attacker.PawnIsAlive)
             {
@@ -55,7 +84,24 @@ namespace src.player.skills
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#09ba00", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float chanceFrom = 1.15f, float chanceTo = 1.35f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#09ba00",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float chanceFrom = 1.15f,
+            float chanceTo = 1.35f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float ChanceFrom { get; set; } = chanceFrom;
             public float ChanceTo { get; set; } = chanceTo;

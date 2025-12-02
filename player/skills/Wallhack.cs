@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Utils;
 using src.utils;
-using System.Collections.Concurrent;
-using System.Drawing;
 using static src.jRandomSkills;
 
 namespace src.player.skills
@@ -24,15 +24,31 @@ namespace src.player.skills
         {
             foreach (var (info, player) in infoList)
             {
-                if (player == null) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (player == null)
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
 
-                var observedPlayer = Utilities.GetPlayers().FirstOrDefault(p => p?.Pawn?.Value?.Handle == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle);
-                var observerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == observedPlayer?.SteamID);
+                var observedPlayer = Utilities
+                    .GetPlayers()
+                    .FirstOrDefault(p =>
+                        p?.Pawn?.Value?.Handle
+                        == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle
+                    );
+                var observerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == observedPlayer?.SteamID
+                );
 
                 foreach (var glow in glows)
                 {
-                    if (glow.Item3 != player.Team && (playerInfo?.Skill == skillName || (observerInfo != null && observerInfo?.Skill == skillName)))
+                    if (
+                        glow.Item3 != player.Team
+                        && (
+                            playerInfo?.Skill == skillName
+                            || (observerInfo != null && observerInfo?.Skill == skillName)
+                        )
+                    )
                         continue;
 
                     info.TransmitEntities.Remove(glow.Item1);
@@ -71,9 +87,17 @@ namespace src.player.skills
 
         private static void SetGlowEffectForAll()
         {
-            foreach (var enemy in Utilities.GetPlayers().FindAll(p => p.PawnIsAlive && p.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist))
+            foreach (
+                var enemy in Utilities
+                    .GetPlayers()
+                    .FindAll(p =>
+                        p.PawnIsAlive && p.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist
+                    )
+            )
             {
-                var enemyInfo = Instance.SkillPlayer.FirstOrDefault(e => e.SteamID == enemy.SteamID);
+                var enemyInfo = Instance.SkillPlayer.FirstOrDefault(e =>
+                    e.SteamID == enemy.SteamID
+                );
                 if (enemyInfo?.Skill == Skills.Ghost)
                     return;
 
@@ -84,19 +108,30 @@ namespace src.player.skills
                 if (modelGlow == null || modelRelay == null)
                     return;
 
-                modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
-                modelRelay.SetModel(enemyPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName);
+                modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(
+                    modelRelay.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2)
+                );
+                modelRelay.SetModel(
+                    enemyPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName
+                );
                 modelRelay.Spawnflags = 256u;
                 modelRelay.RenderMode = RenderMode_t.kRenderNone;
                 modelRelay.DispatchSpawn();
 
-                modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
-                modelGlow.SetModel(enemyPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName);
+                modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(
+                    modelGlow.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2)
+                );
+                modelGlow.SetModel(
+                    enemyPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName
+                );
                 modelGlow.Spawnflags = 256u;
                 modelGlow.Render = Color.FromArgb(1, 255, 255, 255);
                 modelGlow.DispatchSpawn();
 
-                modelGlow.Glow.GlowColorOverride = enemy.Team == CsTeam.Terrorist ? Color.FromArgb(255, 255, 165, 0) : Color.FromArgb(255, 173, 216, 230);
+                modelGlow.Glow.GlowColorOverride =
+                    enemy.Team == CsTeam.Terrorist
+                        ? Color.FromArgb(255, 255, 165, 0)
+                        : Color.FromArgb(255, 173, 216, 230);
                 modelGlow.Glow.GlowRange = 5000;
                 modelGlow.Glow.GlowTeam = -1;
                 modelGlow.Glow.GlowType = 3;
@@ -108,8 +143,21 @@ namespace src.player.skills
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#5d00ff", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#5d00ff",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

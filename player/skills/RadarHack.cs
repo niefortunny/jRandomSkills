@@ -19,27 +19,35 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
+                if (!Instance.IsPlayerValid(player))
+                    continue;
 
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                 {
                     SetEnemiesVisibleOnRadar(player);
                 }
             }
         }
-        
+
         private static void SetEnemiesVisibleOnRadar(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid || player.PlayerPawn?.Value == null) return;
+            if (player == null || !player.IsValid || player.PlayerPawn?.Value == null)
+                return;
             int playerIndex = (int)player.Index - 1;
 
-            foreach (var enemy in Utilities.GetPlayers().FindAll(p => p.Team != player.Team && p.PawnIsAlive))
+            foreach (
+                var enemy in Utilities
+                    .GetPlayers()
+                    .FindAll(p => p.Team != player.Team && p.PawnIsAlive)
+            )
             {
                 var enemyPawn = enemy.PlayerPawn.Value;
-                if (enemyPawn == null) continue;
+                if (enemyPawn == null)
+                    continue;
                 enemyPawn.EntitySpottedState.SpottedByMask[0] |= (1u << (int)(playerIndex % 32));
-
             }
 
             var bombEntities = Utilities.FindAllEntitiesByDesignerName<CC4>("weapon_c4").ToList();
@@ -53,9 +61,15 @@ namespace src.player.skills
 
         public class SkillConfig : SkillsInfo.DefaultSkillInfo
         {
-            public SkillConfig(Skills skill = skillName, bool active = true, string color = "#2effcb", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : base(skill, active, color, onlyTeam, needsTeammates)
-            {
-            }
+            public SkillConfig(
+                Skills skill = skillName,
+                bool active = true,
+                string color = "#2effcb",
+                CsTeam onlyTeam = CsTeam.None,
+                bool disableOnFreezeTime = false,
+                bool needsTeammates = false
+            )
+                : base(skill, active, color, onlyTeam, needsTeammates) { }
         }
     }
 }

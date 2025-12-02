@@ -20,7 +20,12 @@ namespace src.player.skills
             var victim = @event.Userid;
             int hitgroup = @event.Hitgroup;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim) || attacker == victim) return;
+            if (
+                !Instance.IsPlayerValid(attacker)
+                || !Instance.IsPlayerValid(victim)
+                || attacker == victim
+            )
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == victim?.SteamID);
             if (playerInfo?.Skill == skillName && hitgroup == (int)HitGroup_t.HITGROUP_HEAD)
                 ApplyIronHeadEffect(victim!, @event.DmgHealth);
@@ -29,7 +34,8 @@ namespace src.player.skills
         private static void ApplyIronHeadEffect(CCSPlayerController victim, float damage)
         {
             var playerPawn = victim.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
             var newHealth = playerPawn.Health + damage;
 
             if (newHealth > 100)
@@ -38,8 +44,21 @@ namespace src.player.skills
             playerPawn.Health = (int)newHealth;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#8B4513", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#8B4513",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

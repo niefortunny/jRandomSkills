@@ -32,8 +32,11 @@ namespace src.player.skills
 
         public static void BombPlanted(EventBombPlanted _)
         {
-            var plantedBomb = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault();
-            if (plantedBomb == null) return;
+            var plantedBomb = Utilities
+                .FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4")
+                .FirstOrDefault();
+            if (plantedBomb == null)
+                return;
             plantedC4 = plantedBomb;
             CreateTrigger();
         }
@@ -41,7 +44,13 @@ namespace src.player.skills
         private static void CreateTrigger()
         {
             var trigger = Utilities.CreateEntityByName<CTriggerMultiple>("trigger_multiple");
-            if (trigger == null || plantedC4 == null || trigger.AbsOrigin == null || plantedC4.AbsOrigin == null) return;
+            if (
+                trigger == null
+                || plantedC4 == null
+                || trigger.AbsOrigin == null
+                || plantedC4.AbsOrigin == null
+            )
+                return;
 
             trigger.Collision.SolidType = SolidType_t.SOLID_CAPSULE;
             trigger.Collision.SolidFlags = 0;
@@ -82,7 +91,13 @@ namespace src.player.skills
             CEntityInstance param = h.GetParam<CEntityInstance>(0);
             CTakeDamageInfo param2 = h.GetParam<CTakeDamageInfo>(1);
 
-            if (param == null || param.Entity == null || param2 == null || param2.Attacker == null || param2.Attacker.Value == null)
+            if (
+                param == null
+                || param.Entity == null
+                || param2 == null
+                || param2.Attacker == null
+                || param2.Attacker.Value == null
+            )
                 return;
 
             CCSPlayerPawn attackerPawn = new(param2.Attacker.Value.Handle);
@@ -92,13 +107,21 @@ namespace src.player.skills
 
             CTriggerMultiple trigger = new(param.Handle);
 
-            if (attackerPawn == null || attackerPawn.Controller?.Value == null || trigger == null || !trigger.Globalname.StartsWith("planted_bomb_prop_"))
+            if (
+                attackerPawn == null
+                || attackerPawn.Controller?.Value == null
+                || trigger == null
+                || !trigger.Globalname.StartsWith("planted_bomb_prop_")
+            )
                 return;
 
             CCSPlayerController attacker = attackerPawn.Controller.Value.As<CCSPlayerController>();
 
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker.SteamID);
-            if (playerInfo == null || playerInfo.Skill != skillName) return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker.SteamID
+            );
+            if (playerInfo == null || playerInfo.Skill != skillName)
+                return;
 
             bombHealth -= (int)param2.TotalledDamage;
             if (bombHealth <= 0)
@@ -107,10 +130,29 @@ namespace src.player.skills
                 return;
             }
 
-            Localization.PrintTranslationToChatAll($" {ChatColors.Gold}{{0}}: {ChatColors.Red}{bombHealth}{ChatColors.Gold}/{ChatColors.Green}{maxBombHealth}", ["fragilebomb_bomb_health"]);
+            Localization.PrintTranslationToChatAll(
+                $" {ChatColors.Gold}{{0}}: {ChatColors.Red}{bombHealth}{ChatColors.Gold}/{ChatColors.Green}{maxBombHealth}",
+                ["fragilebomb_bomb_health"]
+            );
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#5d00ff", CsTeam onlyTeam = CsTeam.CounterTerrorist, bool disableOnFreezeTime = false, bool needsTeammates = false, int maxBombHealth = 1000) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#5d00ff",
+            CsTeam onlyTeam = CsTeam.CounterTerrorist,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int maxBombHealth = 1000
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int MaxBombHealth { get; set; } = maxBombHealth;
         }

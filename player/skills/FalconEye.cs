@@ -76,12 +76,11 @@ namespace src.player.skills
                         ChangeCamera(player, true);
                         continue;
                     }
-                    Vector pos =
-                        new(
-                            pawn.AbsOrigin.X,
-                            pawn.AbsOrigin.Y,
-                            pawn.AbsOrigin.Z + SkillsInfo.GetValue<float>(skillName, "distance")
-                        );
+                    Vector pos = new(
+                        pawn.AbsOrigin.X,
+                        pawn.AbsOrigin.Y,
+                        pawn.AbsOrigin.Z + SkillsInfo.GetValue<float>(skillName, "distance")
+                    );
                     QAngle angle = new(90, 0, -pawn.V_angle.Y);
                     cameraInfo.Item2.Teleport(pos, angle);
                 }
@@ -124,12 +123,11 @@ namespace src.player.skills
             var pawn = player.PlayerPawn.Value;
             if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null)
                 return 0;
-            Vector pos =
-                new(
-                    pawn.AbsOrigin.X,
-                    pawn.AbsOrigin.Y,
-                    pawn.AbsOrigin.Z + SkillsInfo.GetValue<float>(skillName, "distance")
-                );
+            Vector pos = new(
+                pawn.AbsOrigin.X,
+                pawn.AbsOrigin.Y,
+                pawn.AbsOrigin.Z + SkillsInfo.GetValue<float>(skillName, "distance")
+            );
 
             Server.NextFrame(() =>
             {

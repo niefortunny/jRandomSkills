@@ -12,14 +12,19 @@ namespace src.player.skills
 
         public static void LoadSkill()
         {
-            SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"), false);
+            SkillUtils.RegisterSkill(
+                skillName,
+                SkillsInfo.GetValue<string>(skillName, "color"),
+                false
+            );
         }
 
         public static void NewRound()
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
+                if (!Instance.IsPlayerValid(player))
+                    continue;
                 DisableSkill(player);
             }
         }
@@ -27,24 +32,36 @@ namespace src.player.skills
         public static unsafe void EnableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             var playerPawn = player.PlayerPawn?.Value;
             if (playerPawn != null && player.IsValid)
             {
-                float newSize = (float)Instance.Random.NextDouble() * (SkillsInfo.GetValue<float>(skillName, "maxScale") - SkillsInfo.GetValue<float>(skillName, "minScale")) + SkillsInfo.GetValue<float>(skillName, "minScale");
+                float newSize =
+                    (float)Instance.Random.NextDouble()
+                        * (
+                            SkillsInfo.GetValue<float>(skillName, "maxScale")
+                            - SkillsInfo.GetValue<float>(skillName, "minScale")
+                        )
+                    + SkillsInfo.GetValue<float>(skillName, "minScale");
                 newSize = (float)Math.Round(newSize, 2);
                 playerInfo.SkillChance = newSize;
 
                 SkillUtils.ChangePlayerScale(player, newSize);
-                SkillUtils.PrintToChat(player, $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newSize)}", false);
+                SkillUtils.PrintToChat(
+                    player,
+                    $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, newSize)}",
+                    false
+                );
             }
         }
 
         public static void DisableSkill(CCSPlayerController player)
         {
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             var playerPawn = player.PlayerPawn?.Value;
             if (playerPawn != null && playerPawn?.CBodyComponent != null)
@@ -54,7 +71,24 @@ namespace src.player.skills
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ffff00", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float minScale = .6f, float maxScale = .95f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#ffff00",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float minScale = .6f,
+            float maxScale = .95f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float MinScale { get; set; } = minScale;
             public float MaxScale { get; set; } = maxScale;

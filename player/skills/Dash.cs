@@ -22,8 +22,11 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) return;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (!Instance.IsPlayerValid(player))
+                    return;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     HandleDash(player);
             }
@@ -32,22 +35,31 @@ namespace src.player.skills
         private static void HandleDash(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
 
             var flags = (PlayerFlags)playerPawn.Flags;
             var buttons = player.Buttons;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerPawn == null || playerInfo == null) return;
+            if (playerPawn == null || playerInfo == null)
+                return;
 
-            if ((LF[player.Slot] & PlayerFlags.FL_ONGROUND) != 0 && (flags & PlayerFlags.FL_ONGROUND) == 0 && (LB[player.Slot] & PlayerButtons.Jump) == 0 && (buttons & PlayerButtons.Jump) != 0)
-            {
-            }
+            if (
+                (LF[player.Slot] & PlayerFlags.FL_ONGROUND) != 0
+                && (flags & PlayerFlags.FL_ONGROUND) == 0
+                && (LB[player.Slot] & PlayerButtons.Jump) == 0
+                && (buttons & PlayerButtons.Jump) != 0
+            ) { }
             else if ((flags & PlayerFlags.FL_ONGROUND) != 0)
             {
                 J[player.Slot] = 0;
             }
-            else if ((LB[player.Slot] & PlayerButtons.Jump) == 0 && (buttons & PlayerButtons.Jump) != 0 && J[player.Slot] < 1)
+            else if (
+                (LB[player.Slot] & PlayerButtons.Jump) == 0
+                && (buttons & PlayerButtons.Jump) != 0
+                && J[player.Slot] < 1
+            )
             {
                 J[player.Slot]++;
 
@@ -70,8 +82,12 @@ namespace src.player.skills
                 float moveAngle = MathF.Atan2(moveX, moveY) * (180f / MathF.PI);
                 QAngle dashAngles = new(0, playerPawn.EyeAngles.Y + moveAngle, 0);
 
-                Vector newVelocity = SkillUtils.GetForwardVector(dashAngles) * SkillsInfo.GetValue<float>(skillName, "pushVelocity");
-                newVelocity.Z = playerPawn.AbsVelocity.Z + SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
+                Vector newVelocity =
+                    SkillUtils.GetForwardVector(dashAngles)
+                    * SkillsInfo.GetValue<float>(skillName, "pushVelocity");
+                newVelocity.Z =
+                    playerPawn.AbsVelocity.Z
+                    + SkillsInfo.GetValue<float>(skillName, "jumpVelocity");
 
                 playerPawn.AbsVelocity.X = newVelocity.X;
                 playerPawn.AbsVelocity.Y = newVelocity.Y;
@@ -82,7 +98,24 @@ namespace src.player.skills
             LB[player.Slot] = buttons;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#42bbfc", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float jumpVelocity = 150f, float pushVelocity = 600f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#42bbfc",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float jumpVelocity = 150f,
+            float pushVelocity = 600f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float JumpVelocity { get; set; } = jumpVelocity;
             public float PushVelocity { get; set; } = pushVelocity;

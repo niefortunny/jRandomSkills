@@ -20,8 +20,15 @@ namespace src.player.skills
             var attacker = @event.Attacker;
             var victim = @event.Userid;
 
-            if (!Instance.IsPlayerValid(attacker) || !Instance.IsPlayerValid(victim) || attacker == victim) return;
-            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker?.SteamID);
+            if (
+                !Instance.IsPlayerValid(attacker)
+                || !Instance.IsPlayerValid(victim)
+                || attacker == victim
+            )
+                return;
+            var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker?.SteamID
+            );
 
             if (playerInfo?.Skill == skillName && victim!.PawnIsAlive)
                 HealAttacker(attacker!, @event.DmgHealth);
@@ -30,9 +37,13 @@ namespace src.player.skills
         private static void HealAttacker(CCSPlayerController attacker, float damage)
         {
             var attackerPawn = attacker.PlayerPawn.Value;
-            if (attackerPawn == null) return;
+            if (attackerPawn == null)
+                return;
 
-            int newHealth = (int)(attackerPawn.Health + (damage * SkillsInfo.GetValue<float>(skillName, "healthRegainScale")));
+            int newHealth = (int)(
+                attackerPawn.Health
+                + (damage * SkillsInfo.GetValue<float>(skillName, "healthRegainScale"))
+            );
 
             attackerPawn.MaxHealth = Math.Max(newHealth, 100);
             Utilities.SetStateChanged(attackerPawn, "CBaseEntity", "m_iMaxHealth");
@@ -41,7 +52,23 @@ namespace src.player.skills
             Utilities.SetStateChanged(attackerPawn, "CBaseEntity", "m_iHealth");
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#FA050D", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float healthRegainScale = .3f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#FA050D",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float healthRegainScale = .3f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float HealthRegainScale { get; set; } = healthRegainScale;
         }

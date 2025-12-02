@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -29,7 +29,9 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
                         UpdateHUD(player, skillInfo);
@@ -38,12 +40,15 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            SkillPlayerInfo.TryAdd(player.SteamID, new PlayerSkillInfo
-            {
-                SteamID = player.SteamID,
-                CanUse = true,
-                Cooldown = DateTime.MinValue,
-            });
+            SkillPlayerInfo.TryAdd(
+                player.SteamID,
+                new PlayerSkillInfo
+                {
+                    SteamID = player.SteamID,
+                    CanUse = true,
+                    Cooldown = DateTime.MinValue,
+                }
+            );
         }
 
         public static void DisableSkill(CCSPlayerController player)
@@ -57,7 +62,14 @@ namespace src.player.skills
             float cooldown = 0;
             if (skillInfo != null)
             {
-                float time = (int)Math.Ceiling((skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "cooldown")) - DateTime.Now).TotalSeconds);
+                float time = (int)
+                    Math.Ceiling(
+                        (
+                            skillInfo.Cooldown.AddSeconds(
+                                SkillsInfo.GetValue<float>(skillName, "cooldown")
+                            ) - DateTime.Now
+                        ).TotalSeconds
+                    );
                 cooldown = Math.Max(time, 0);
 
                 if (cooldown == 0 && skillInfo?.CanUse == false)
@@ -65,22 +77,26 @@ namespace src.player.skills
             }
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             if (cooldown == 0)
                 playerInfo.PrintHTML = null;
             else
-                playerInfo.PrintHTML = $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}";
+                playerInfo.PrintHTML =
+                    $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}";
         }
 
         public static void UseSkill(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn?.CBodyComponent == null) return;
+            if (playerPawn?.CBodyComponent == null)
+                return;
 
             if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
             {
-                if (!player.IsValid || !player.PawnIsAlive) return;
+                if (!player.IsValid || !player.PawnIsAlive)
+                    return;
                 if (skillInfo.CanUse)
                 {
                     skillInfo.CanUse = false;
@@ -94,21 +110,34 @@ namespace src.player.skills
         {
             var playerPawn = player.PlayerPawn.Value;
             var replica = Utilities.CreateEntityByName<CDynamicProp>("prop_dynamic_override");
-            if (replica == null || playerPawn == null || !playerPawn.IsValid || playerPawn.AbsOrigin == null || playerPawn.AbsRotation == null)
+            if (
+                replica == null
+                || playerPawn == null
+                || !playerPawn.IsValid
+                || playerPawn.AbsOrigin == null
+                || playerPawn.AbsRotation == null
+            )
                 return;
 
             float distance = 40;
-            Vector pos = playerPawn.AbsOrigin + SkillUtils.GetForwardVector(playerPawn.AbsRotation) * distance;
+            Vector pos =
+                playerPawn.AbsOrigin
+                + SkillUtils.GetForwardVector(playerPawn.AbsRotation) * distance;
 
             if (((PlayerFlags)playerPawn.Flags).HasFlag(PlayerFlags.FL_DUCKING))
                 pos.Z -= 19;
-            
+
             replica.Flags = playerPawn.Flags;
             replica.Flags |= (uint)Flags_t.FL_DUCKING;
             replica.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
-            replica.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(replica.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
-            replica.SetModel(playerPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName);
-            replica.Entity!.Name = replica.Globalname = $"Replica_{Server.TickCount}_{(player.Team == CsTeam.CounterTerrorist ? "CT" : "TT")}";
+            replica.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(
+                replica.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2)
+            );
+            replica.SetModel(
+                playerPawn!.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName
+            );
+            replica.Entity!.Name = replica.Globalname =
+                $"Replica_{Server.TickCount}_{(player.Team == CsTeam.CounterTerrorist ? "CT" : "TT")}";
             replica.Teleport(pos, playerPawn.AbsRotation, null);
             replica.DispatchSpawn();
         }
@@ -118,14 +147,23 @@ namespace src.player.skills
             CEntityInstance param = h.GetParam<CEntityInstance>(0);
             CTakeDamageInfo param2 = h.GetParam<CTakeDamageInfo>(1);
 
-            if (param == null || param.Entity == null || param2 == null || param2.Attacker == null || param2.Attacker.Value == null)
+            if (
+                param == null
+                || param.Entity == null
+                || param2 == null
+                || param2.Attacker == null
+                || param2.Attacker.Value == null
+            )
                 return;
 
-            if (string.IsNullOrEmpty(param.Entity.Name)) return;
-            if (!param.Entity.Name.StartsWith("Replica_")) return;
+            if (string.IsNullOrEmpty(param.Entity.Name))
+                return;
+            if (!param.Entity.Name.StartsWith("Replica_"))
+                return;
 
             var replica = param.As<CPhysicsPropMultiplayer>();
-            if (replica == null || !replica.IsValid) return;
+            if (replica == null || !replica.IsValid)
+                return;
             replica.EmitSound("GlassBottle.BulletImpact", volume: 1f);
             replica.AcceptInput("Kill");
 
@@ -133,9 +171,11 @@ namespace src.player.skills
             if (attackerPawn.DesignerName != "player")
                 return;
 
+            CCSPlayerController attacker = new(param2.Attacker.Value.Handle);
+
             var attackerTeam = attackerPawn.TeamNum;
             var replicaTeam = replica.Globalname.EndsWith("CT") ? 3 : 2;
-            SkillUtils.TakeHealth(attackerPawn, attackerTeam != replicaTeam ? 15 : 5);
+            SkillUtils.TakeHealth(attacker, attackerTeam != replicaTeam ? 15 : 5);
         }
 
         public class PlayerSkillInfo
@@ -145,7 +185,23 @@ namespace src.player.skills
             public DateTime Cooldown { get; set; }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#a3000b", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, float cooldown = 15f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#a3000b",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = true,
+            bool needsTeammates = false,
+            float cooldown = 15f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float Cooldown { get; set; } = cooldown;
         }

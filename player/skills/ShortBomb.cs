@@ -18,17 +18,41 @@ namespace src.player.skills
         public static void BombPlanted(EventBombPlanted @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
-            var plantedBomb = Utilities.FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4").FirstOrDefault();
+            var plantedBomb = Utilities
+                .FindAllEntitiesByDesignerName<CPlantedC4>("planted_c4")
+                .FirstOrDefault();
             if (plantedBomb != null)
-                Server.NextFrame(() => plantedBomb.C4Blow = (float)Server.EngineTime + SkillsInfo.GetValue<int>(skillName, "detonationTime"));
+                Server.NextFrame(() =>
+                    plantedBomb.C4Blow =
+                        (float)Server.EngineTime
+                        + SkillsInfo.GetValue<int>(skillName, "detonationTime")
+                );
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#f5b74c", CsTeam onlyTeam = CsTeam.Terrorist, bool disableOnFreezeTime = false, bool needsTeammates = false, int detonationTime = 20) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#f5b74c",
+            CsTeam onlyTeam = CsTeam.Terrorist,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int detonationTime = 20
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int DetonationTime { get; set; } = detonationTime;
         }

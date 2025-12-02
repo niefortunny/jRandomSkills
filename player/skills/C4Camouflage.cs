@@ -1,18 +1,21 @@
+using System.Collections.Concurrent;
 using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
     public class C4Camouflage : ISkill
     {
         private const Skills skillName = Skills.C4Camouflage;
-        private static readonly ConcurrentDictionary<ulong, ConcurrentBag<uint>> invisibleEntities = [];
+        private static readonly ConcurrentDictionary<
+            ulong,
+            ConcurrentBag<uint>
+        > invisibleEntities = [];
 
         public static void LoadSkill()
         {
@@ -22,9 +25,11 @@ namespace src.player.skills
         public static void WeaponPickup(EventItemPickup @event)
         {
             var player = @event.Userid;
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
             EnableSkill(player!);
         }
 
@@ -33,9 +38,11 @@ namespace src.player.skills
             var player = @event.Userid;
             var weapon = @event.Item;
 
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player?.SteamID);
-            if (playerInfo?.Skill != skillName) return;
+            if (playerInfo?.Skill != skillName)
+                return;
 
             if (weapon == "c4")
             {
@@ -63,7 +70,8 @@ namespace src.player.skills
         {
             foreach (var (info, player) in infoList)
             {
-                if (player == null) continue;
+                if (player == null)
+                    continue;
                 foreach ((var playerId, var itemList) in invisibleEntities)
                     if (player.SteamID != playerId)
                         foreach (var item in itemList)
@@ -74,15 +82,27 @@ namespace src.player.skills
         public static void EnableSkill(CCSPlayerController player)
         {
             Event.EnableTransmit();
-            if (player == null || !player.IsValid) return;
+            if (player == null || !player.IsValid)
+                return;
             var playerPawn = player.PlayerPawn.Value;
 
-            if (playerPawn == null || !playerPawn.IsValid) return;
-            if (playerPawn.WeaponServices == null || playerPawn.WeaponServices.ActiveWeapon == null || !playerPawn.WeaponServices.ActiveWeapon.IsValid) return;
-            if (playerPawn.WeaponServices.ActiveWeapon.Value == null || !playerPawn.WeaponServices.ActiveWeapon.Value.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
+            if (
+                playerPawn.WeaponServices == null
+                || playerPawn.WeaponServices.ActiveWeapon == null
+                || !playerPawn.WeaponServices.ActiveWeapon.IsValid
+            )
+                return;
+            if (
+                playerPawn.WeaponServices.ActiveWeapon.Value == null
+                || !playerPawn.WeaponServices.ActiveWeapon.Value.IsValid
+            )
+                return;
 
             var activeWeapon = playerPawn.WeaponServices.ActiveWeapon.Value;
-            if (activeWeapon.DesignerName != "weapon_c4") return;
+            if (activeWeapon.DesignerName != "weapon_c4")
+                return;
 
             SetPlayerVisibility(player, false);
             SetWeaponVisibility(player, false);
@@ -108,14 +128,21 @@ namespace src.player.skills
 
         private static void SetWeaponVisibility(CCSPlayerController player, bool visible)
         {
-            if (!Instance.IsPlayerValid(player)) return;
+            if (!Instance.IsPlayerValid(player))
+                return;
             var playerPawn = player.PlayerPawn.Value!;
-            if (playerPawn.WeaponServices == null) return;
+            if (playerPawn.WeaponServices == null)
+                return;
 
             invisibleEntities.TryRemove(player.SteamID, out _);
             foreach (var weapon in playerPawn.WeaponServices.MyWeapons)
             {
-                if (weapon != null && weapon.IsValid && weapon.Value != null && weapon.Value.IsValid)
+                if (
+                    weapon != null
+                    && weapon.IsValid
+                    && weapon.Value != null
+                    && weapon.Value.IsValid
+                )
                 {
                     if (!visible)
                     {
@@ -134,8 +161,21 @@ namespace src.player.skills
                 invisibleEntities.TryRemove(player.SteamID, out _);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#00911f", CsTeam onlyTeam = CsTeam.Terrorist, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#00911f",
+            CsTeam onlyTeam = CsTeam.Terrorist,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

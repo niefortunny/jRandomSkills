@@ -26,7 +26,7 @@ namespace src
         public override string ModuleAuthor => "D3X, Juzlus";
         public override string ModuleDescription =>
             "Plugin adds random skills every round for CS2 by D3X. Modified by Juzlus.";
-        public override string ModuleVersion => "1.1.9-b";
+        public override string ModuleVersion => "1.2.0-dmg_fix";
 
         public override void Load(bool hotReload)
         {

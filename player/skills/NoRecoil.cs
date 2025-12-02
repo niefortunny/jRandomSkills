@@ -34,13 +34,17 @@ namespace src.player.skills
         {
             foreach (var player in Utilities.GetPlayers())
             {
-                if (!Instance.IsPlayerValid(player)) continue;
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                if (!Instance.IsPlayerValid(player))
+                    continue;
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
 
                 if (playerInfo?.Skill == skillName)
                 {
                     var pawn = player.PlayerPawn.Value;
-                    if (pawn == null || !pawn.IsValid || pawn.CameraServices == null) continue;
+                    if (pawn == null || !pawn.IsValid || pawn.CameraServices == null)
+                        continue;
                     pawn.AimPunchTickBase = 0;
                     pawn.AimPunchTickFraction = 0f;
                     pawn.CameraServices.CsViewPunchAngleTick = 0;
@@ -49,8 +53,21 @@ namespace src.player.skills
             }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#8a42f5", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
-        {
-        }
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#8a42f5",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            ) { }
     }
 }

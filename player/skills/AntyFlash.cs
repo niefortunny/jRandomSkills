@@ -19,14 +19,23 @@ namespace src.player.skills
         {
             var player = @event.Userid;
             var attacker = @event.Attacker;
-            if (player == null || !player.IsValid || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
-            if (attacker == null || !attacker.IsValid) return;
+            if (
+                player == null
+                || !player.IsValid
+                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE
+            )
+                return;
+            if (attacker == null || !attacker.IsValid)
+                return;
 
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn == null || !playerPawn.IsValid) return;
+            if (playerPawn == null || !playerPawn.IsValid)
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == attacker.SteamID);
+            var attackerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                p.SteamID == attacker.SteamID
+            );
 
             if (playerInfo?.Skill == skillName)
                 playerPawn.FlashDuration = 0.0f;
@@ -39,7 +48,23 @@ namespace src.player.skills
             SkillUtils.TryGiveWeapon(player, CsItem.FlashbangGrenade);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#D6E6FF", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float flashDuration = 7f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#D6E6FF",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float flashDuration = 7f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float FlashDuration { get; set; } = flashDuration;
         }

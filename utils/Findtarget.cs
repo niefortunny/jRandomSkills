@@ -7,13 +7,12 @@ namespace src.utils
 {
     public class FindTarget
     {
-        public static (List<CCSPlayerController> players, string targetname) Find
-            (
-                CommandInfo command,
-                int minArgCount,
-                bool singletarget,
-                bool ignoreMessage = false
-            )
+        public static (List<CCSPlayerController> players, string targetname) Find(
+            CommandInfo command,
+            int minArgCount,
+            bool singletarget,
+            bool ignoreMessage = false
+        )
         {
             if (command.ArgCount < minArgCount)
             {
@@ -32,7 +31,9 @@ namespace src.utils
             else if (singletarget && targetresult.Players.Count > 1)
             {
                 if (command.CallingPlayer != null)
-                    command.ReplyToCommand(command.CallingPlayer.GetTranslation("duplicate_player"));
+                    command.ReplyToCommand(
+                        command.CallingPlayer.GetTranslation("duplicate_player")
+                    );
                 return (new List<CCSPlayerController>(), string.Empty);
             }
 
@@ -58,7 +59,7 @@ namespace src.utils
                     TargetType.TeamCt => Instance.Localizer["ct"],
                     TargetType.TeamT => Instance.Localizer["t"],
                     TargetType.TeamSpec => Instance.Localizer["spec"],
-                    _ => targetresult.Players.First().PlayerName
+                    _ => targetresult.Players.First().PlayerName,
                 };
             }
 

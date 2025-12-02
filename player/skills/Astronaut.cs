@@ -12,7 +12,11 @@ namespace src.player.skills
 
         public static void LoadSkill()
         {
-            SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"), false);
+            SkillUtils.RegisterSkill(
+                skillName,
+                SkillsInfo.GetValue<string>(skillName, "color"),
+                false
+            );
         }
 
         public static void EnableSkill(CCSPlayerController player)
@@ -28,26 +32,70 @@ namespace src.player.skills
 
         public static void DisableSkill(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) return;
+            if (
+                player == null
+                || !player.IsValid
+                || player.PlayerPawn.Value == null
+                || !player.PlayerPawn.Value.IsValid
+            )
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
             player.PlayerPawn.Value.ActualGravityScale = 1;
         }
 
         private static void ApplyGravityModifier(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.Value.IsValid) return;
+            if (
+                player == null
+                || !player.IsValid
+                || player.PlayerPawn.Value == null
+                || !player.PlayerPawn.Value.IsValid
+            )
+                return;
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
-            float gravityModifier = (float)Math.Round(Instance.Random.NextDouble() * (SkillsInfo.GetValue<float>(skillName, "ChanceTo") - SkillsInfo.GetValue<float>(skillName, "chanceFrom")) + SkillsInfo.GetValue<float>(skillName, "chanceFrom"), 1);
+            float gravityModifier = (float)
+                Math.Round(
+                    Instance.Random.NextDouble()
+                        * (
+                            SkillsInfo.GetValue<float>(skillName, "ChanceTo")
+                            - SkillsInfo.GetValue<float>(skillName, "chanceFrom")
+                        )
+                        + SkillsInfo.GetValue<float>(skillName, "chanceFrom"),
+                    1
+                );
             playerInfo.SkillChance = gravityModifier;
-            SkillUtils.PrintToChat(player, $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, gravityModifier)}", false);
+            SkillUtils.PrintToChat(
+                player,
+                $"{ChatColors.DarkRed}{player.GetSkillName(skillName)}{ChatColors.Lime}: {player.GetSkillDescription(skillName, gravityModifier)}",
+                false
+            );
             player.PlayerPawn.Value.ActualGravityScale = gravityModifier;
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#7E10AD", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, float chanceFrom = .1f, float chanceTo = .7f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#7E10AD",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            float chanceFrom = .1f,
+            float chanceTo = .7f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public float ChanceFrom { get; set; } = chanceFrom;
             public float ChanceTo { get; set; } = chanceTo;

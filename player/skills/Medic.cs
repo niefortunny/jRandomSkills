@@ -1,9 +1,9 @@
+using System.Collections.Concurrent;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -26,10 +26,13 @@ namespace src.player.skills
 
         public static void OnTick()
         {
-            if (SkillUtils.IsFreezeTime()) return;
+            if (SkillUtils.IsFreezeTime())
+                return;
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
                         UpdateHUD(player, skillInfo);
@@ -38,13 +41,16 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            SkillPlayerInfo.TryAdd(player.SteamID, new PlayerSkillInfo
-            {
-                SteamID = player.SteamID,
-                CanUse = true,
-                Cooldown = DateTime.MinValue,
-                Count = SkillsInfo.GetValue<int>(skillName, "healthShotLimit"),
-            });
+            SkillPlayerInfo.TryAdd(
+                player.SteamID,
+                new PlayerSkillInfo
+                {
+                    SteamID = player.SteamID,
+                    CanUse = true,
+                    Cooldown = DateTime.MinValue,
+                    Count = SkillsInfo.GetValue<int>(skillName, "healthShotLimit"),
+                }
+            );
         }
 
         public static void DisableSkill(CCSPlayerController player)
@@ -58,7 +64,14 @@ namespace src.player.skills
             float cooldown = 0;
             if (skillInfo != null)
             {
-                float time = (int)Math.Ceiling((skillInfo.Cooldown.AddSeconds(SkillsInfo.GetValue<float>(skillName, "cooldown")) - DateTime.Now).TotalSeconds);
+                float time = (int)
+                    Math.Ceiling(
+                        (
+                            skillInfo.Cooldown.AddSeconds(
+                                SkillsInfo.GetValue<float>(skillName, "cooldown")
+                            ) - DateTime.Now
+                        ).TotalSeconds
+                    );
                 cooldown = Math.Max(time, 0);
 
                 if (cooldown == 0 && skillInfo?.CanUse == false)
@@ -66,14 +79,17 @@ namespace src.player.skills
             }
 
             var skillData = SkillData.Skills.FirstOrDefault(s => s.Skill == skillName);
-            if (skillData == null) return;
+            if (skillData == null)
+                return;
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
 
-            string remainingLine = cooldown != 0
-                ? $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}"
-                : $"<font color='#{(skillInfo == null || skillInfo.Count == 0 ? "FF0000" : "00FF00")}'>{(skillInfo == null ? 0 : skillInfo.Count)}/{SkillsInfo.GetValue<int>(skillName, "healthShotLimit")}</font>";
+            string remainingLine =
+                cooldown != 0
+                    ? $"{player.GetTranslation("hud_info", $"<font color='#FF0000'>{cooldown}</font>")}"
+                    : $"<font color='#{(skillInfo == null || skillInfo.Count == 0 ? "FF0000" : "00FF00")}'>{(skillInfo == null ? 0 : skillInfo.Count)}/{SkillsInfo.GetValue<int>(skillName, "healthShotLimit")}</font>";
 
             playerInfo.PrintHTML = remainingLine;
         }
@@ -81,17 +97,22 @@ namespace src.player.skills
         public static void UseSkill(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn.Value;
-            if (playerPawn?.CBodyComponent == null) return;
+            if (playerPawn?.CBodyComponent == null)
+                return;
 
             if (SkillPlayerInfo.TryGetValue(player.SteamID, out var skillInfo))
             {
-                if (!player.IsValid || !player.PawnIsAlive) return;
+                if (!player.IsValid || !player.PawnIsAlive)
+                    return;
                 if (skillInfo.CanUse && skillInfo.Count != 0)
                 {
                     skillInfo.CanUse = false;
                     skillInfo.Cooldown = DateTime.Now;
                     skillInfo.Count -= 1;
-                    SkillUtils.AddHealth(playerPawn, SkillsInfo.GetValue<int>(skillName, "healthToAdd"));
+                    SkillUtils.AddHealth(
+                        playerPawn,
+                        SkillsInfo.GetValue<int>(skillName, "healthToAdd")
+                    );
                     player.EmitSound("Healthshot.Success");
                 }
             }
@@ -105,7 +126,25 @@ namespace src.player.skills
             public DateTime Cooldown { get; set; }
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#10c212", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = true, bool needsTeammates = false, int healthToAdd = 50, int healthShotLimit = 3, float cooldown = 1f) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#10c212",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = true,
+            bool needsTeammates = false,
+            int healthToAdd = 50,
+            int healthShotLimit = 3,
+            float cooldown = 1f
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int HealthToAdd { get; set; } = healthToAdd;
             public int HealthShotLimit { get; set; } = healthShotLimit;

@@ -30,10 +30,14 @@ namespace src.player.skills
             if (
                 attackerInfo?.Skill == skillName
                 && playerInfo?.Skill != Skills.AntyFlash
+                && (player?.Team != attacker?.Team || player == attacker)
                 && player!.PlayerPawn.Value!.FlashDuration
                     >= SkillsInfo.GetValue<float>(skillName, "flashDuration")
             )
-                player?.PlayerPawn?.Value?.CommitSuicide(false, true);
+            {
+                player?.CommitSuicide(false, true);
+                SkillUtils.SendToKillfeed(attacker!, player!, "weapon_flashbang");
+            }
         }
 
         public static void EnableSkill(CCSPlayerController player)

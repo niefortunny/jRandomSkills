@@ -1,11 +1,11 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Drawing;
-using static src.jRandomSkills;
-using System.Collections.Concurrent;
 using src.utils;
+using static src.jRandomSkills;
 
 namespace src.player.skills
 {
@@ -13,7 +13,10 @@ namespace src.player.skills
     {
         private const Skills skillName = Skills.Jackal;
         private static readonly ConcurrentDictionary<ulong, byte> playersInAction = [];
-        private static readonly ConcurrentDictionary<CCSPlayerController, ConcurrentQueue<CBeam>> stepBeams = [];
+        private static readonly ConcurrentDictionary<
+            CCSPlayerController,
+            ConcurrentQueue<CBeam>
+        > stepBeams = [];
 
         public static void LoadSkill()
         {
@@ -23,16 +26,17 @@ namespace src.player.skills
         public static void NewRound()
         {
             foreach (var beams in stepBeams.Values)
-                foreach (var beam in beams)
-                    if (beam != null && beam.IsValid)
-                        beam.AcceptInput("Kill");
+            foreach (var beam in beams)
+                if (beam != null && beam.IsValid)
+                    beam.AcceptInput("Kill");
             stepBeams.Clear();
             playersInAction.Clear();
         }
 
         public static void OnTick()
         {
-            if (Server.TickCount % 8 != 0) return;
+            if (Server.TickCount % 8 != 0)
+                return;
             foreach (var step in stepBeams.ToList())
             {
                 var player = step.Key;
@@ -43,11 +47,19 @@ namespace src.player.skills
                 }
 
                 var pawn = player.PlayerPawn.Value;
-                if (pawn == null || !pawn.IsValid || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE || pawn.AbsOrigin == null) continue;
+                if (
+                    pawn == null
+                    || !pawn.IsValid
+                    || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE
+                    || pawn.AbsOrigin == null
+                )
+                    continue;
 
                 var beams = step.Value;
-                Vector lastBeamVector = (beams != null && beams.Count > 0 && beams.Last() != null)
-                    ? beams.Last().EndPos : pawn.AbsOrigin;
+                Vector lastBeamVector =
+                    (beams != null && beams.Count > 0 && beams.Last() != null)
+                        ? beams.Last().EndPos
+                        : pawn.AbsOrigin;
 
                 var newBeam = CreateBeamStep(step.Key.Team, lastBeamVector, pawn.AbsOrigin);
                 if (newBeam != null)
@@ -64,17 +76,27 @@ namespace src.player.skills
 
         public static void CheckTransmit([CastFrom(typeof(nint))] CCheckTransmitInfoList infoList)
         {
-            foreach( var (info, player) in infoList)
+            foreach (var (info, player) in infoList)
             {
-                if (player == null) continue;
+                if (player == null)
+                    continue;
                 foreach (var step in stepBeams)
                 {
                     var enemy = step.Key;
                     var beams = step.Value;
 
-                    var observedPlayer = Utilities.GetPlayers().FirstOrDefault(p => p?.Pawn?.Value?.Handle == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle);
-                    var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-                    var observerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == observedPlayer?.SteamID);
+                    var observedPlayer = Utilities
+                        .GetPlayers()
+                        .FirstOrDefault(p =>
+                            p?.Pawn?.Value?.Handle
+                            == player?.Pawn?.Value?.ObserverServices?.ObserverTarget?.Value?.Handle
+                        );
+                    var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                        p.SteamID == player.SteamID
+                    );
+                    var observerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                        p.SteamID == observedPlayer?.SteamID
+                    );
 
                     foreach (var beam in beams)
                         if (playerInfo?.Skill != skillName && observerInfo?.Skill != skillName)
@@ -88,12 +110,17 @@ namespace src.player.skills
         public static CBeam? CreateBeamStep(CsTeam team, Vector start, Vector stop)
         {
             CBeam beam = Utilities.CreateEntityByName<CBeam>("beam")!;
-            if (beam == null) return null;
+            if (beam == null)
+                return null;
 
             beam.DispatchSpawn();
-            if (!beam.IsValid) return null;
+            if (!beam.IsValid)
+                return null;
 
-            beam.Render = team == CsTeam.Terrorist ? Color.FromArgb(100, 255, 165, 0) : Color.FromArgb(100, 173, 216, 230);
+            beam.Render =
+                team == CsTeam.Terrorist
+                    ? Color.FromArgb(100, 255, 165, 0)
+                    : Color.FromArgb(100, 173, 216, 230);
             beam.Width = 2.0f;
             beam.EndWidth = 2.0f;
             beam.Teleport(start);
@@ -108,7 +135,17 @@ namespace src.player.skills
         {
             Event.EnableTransmit();
             playersInAction.TryAdd(player.SteamID, 0);
-            foreach (var _player in Utilities.GetPlayers().Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && p.PawnIsAlive && p.Team is CsTeam.CounterTerrorist or CsTeam.Terrorist))
+            foreach (
+                var _player in Utilities
+                    .GetPlayers()
+                    .Where(p =>
+                        p.IsValid
+                        && !p.IsBot
+                        && !p.IsHLTV
+                        && p.PawnIsAlive
+                        && p.Team is CsTeam.CounterTerrorist or CsTeam.Terrorist
+                    )
+            )
                 if (!stepBeams.ContainsKey(_player))
                     stepBeams.TryAdd(_player, []);
         }
@@ -120,7 +157,23 @@ namespace src.player.skills
                 NewRound();
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#f542ef", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, int maxStepBeam = 100) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#f542ef",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int maxStepBeam = 100
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int MaxStepBeam { get; set; } = maxStepBeam;
         }

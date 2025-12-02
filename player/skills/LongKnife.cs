@@ -22,8 +22,9 @@ namespace src.player.skills
         private static bool hooked = false;
         private const int actionCode = 503;
         private static readonly ConcurrentDictionary<ulong, byte> playersInAction = [];
-        private static readonly MemoryFunctionVoid<IntPtr, short> Shoot_Secondary =
-            new(GameData.GetSignature("Shoot_Secondary"));
+        private static readonly MemoryFunctionVoid<IntPtr, short> Shoot_Secondary = new(
+            GameData.GetSignature("Shoot_Secondary")
+        );
 
         public static void LoadSkill()
         {
@@ -123,26 +124,28 @@ namespace src.player.skills
             if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null)
                 return;
 
-            Vector eyePos =
-                new(pawn.AbsOrigin.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
+            Vector eyePos = new(
+                pawn.AbsOrigin.X,
+                pawn.AbsOrigin.Y,
+                pawn.AbsOrigin.Z + pawn.ViewOffset.Z
+            );
             Vector endPos =
                 eyePos
                 + SkillUtils.GetForwardVector(pawn.EyeAngles)
                     * SkillsInfo.GetValue<float>(skillName, "maxDistance");
 
             Ray ray = new(Vector3.Zero);
-            CTraceFilter filter =
-                new(pawn.Index, pawn.Index)
-                {
-                    m_nObjectSetMask = 0xf,
-                    m_nCollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_PLAYER_MOVEMENT,
-                    m_nInteractsWith = pawn.GetInteractsWith(),
-                    m_nInteractsExclude = 0,
-                    m_nBits = 11,
-                    m_bIterateEntities = true,
-                    m_bHitTriggers = false,
-                    m_nInteractsAs = 0x40000,
-                };
+            CTraceFilter filter = new(pawn.Index, pawn.Index)
+            {
+                m_nObjectSetMask = 0xf,
+                m_nCollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_PLAYER_MOVEMENT,
+                m_nInteractsWith = pawn.GetInteractsWith(),
+                m_nInteractsExclude = 0,
+                m_nBits = 11,
+                m_bIterateEntities = true,
+                m_bHitTriggers = false,
+                m_nInteractsAs = 0x40000,
+            };
 
             filter.m_nHierarchyIds[0] = pawn.GetHierarchyId();
             filter.m_nHierarchyIds[1] = 0;
@@ -185,12 +188,16 @@ namespace src.player.skills
                 || target.PlayerPawn.Value == null
                 || !target.PlayerPawn.Value.IsValid
                 || trace.Distance() <= 70
+                || target.Team == player.Team
             )
                 return;
+
             target.PlayerPawn.Value.EmitSound("Player.DamageBody.Onlooker");
             SkillUtils.TakeHealth(
-                target.PlayerPawn.Value,
-                heavyHit ? Instance.Random.Next(45, 55) : Instance.Random.Next(21, 34)
+                target,
+                heavyHit ? Instance.Random.Next(45, 55) : Instance.Random.Next(21, 34),
+                player,
+                "weapon_knife"
             );
         }
 

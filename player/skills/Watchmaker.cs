@@ -33,36 +33,60 @@ namespace src.player.skills
 
         public static void OnEntitySpawned(CEntityInstance entity)
         {
-            if (bombPlanted) return;
+            if (bombPlanted)
+                return;
             var name = entity.DesignerName;
             if (!name.EndsWith("_projectile"))
                 return;
 
             var grenade = entity.As<CBaseCSGrenadeProjectile>();
-            if (grenade.OwnerEntity.Value == null || !grenade.OwnerEntity.Value.IsValid) return;
+            if (grenade.OwnerEntity.Value == null || !grenade.OwnerEntity.Value.IsValid)
+                return;
 
             var pawn = grenade.OwnerEntity.Value.As<CCSPlayerPawn>();
-            if (pawn == null || !pawn.IsValid || pawn.Controller == null || !pawn.Controller.IsValid || pawn.Controller.Value == null || !pawn.Controller.Value.IsValid) return;
+            if (
+                pawn == null
+                || !pawn.IsValid
+                || pawn.Controller == null
+                || !pawn.Controller.IsValid
+                || pawn.Controller.Value == null
+                || !pawn.Controller.Value.IsValid
+            )
+                return;
             var player = pawn.Controller.Value.As<CCSPlayerController>();
 
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
-            if (playerInfo?.Skill != skillName || Instance.GameRules == null) return;
+            if (playerInfo?.Skill != skillName || Instance.GameRules == null)
+                return;
 
             var roundTime = SkillsInfo.GetValue<int>(skillName, "changeRoundTime");
-            Instance.GameRules.RoundTime += player.Team == CsTeam.Terrorist ? roundTime : -roundTime;
+            Instance.GameRules.RoundTime +=
+                player.Team == CsTeam.Terrorist ? roundTime : -roundTime;
             if (player.Team == CsTeam.Terrorist)
-                Localization.PrintTranslationToChatAll($" {ChatColors.Orange}{{0}}", ["watchmaker_tt"], [roundTime]);
+                Localization.PrintTranslationToChatAll(
+                    $" {ChatColors.Orange}{{0}}",
+                    ["watchmaker_tt"],
+                    [roundTime]
+                );
             else
-                Localization.PrintTranslationToChatAll($" {ChatColors.LightBlue}{{0}}", ["watchmaker_ct"], [roundTime]);
+                Localization.PrintTranslationToChatAll(
+                    $" {ChatColors.LightBlue}{{0}}",
+                    ["watchmaker_ct"],
+                    [roundTime]
+                );
         }
 
         public static void OnTick()
         {
-            if (bombPlanted) return;
-            if (SkillUtils.IsFreezeTime()) return;
+            if (bombPlanted)
+                return;
+            if (SkillUtils.IsFreezeTime())
+                return;
             foreach (var player in Utilities.GetPlayers())
             {
-                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p => p.SteamID == player.SteamID);
+                var playerInfo = Instance.SkillPlayer.FirstOrDefault(p =>
+                    p.SteamID == player.SteamID
+                );
                 if (playerInfo?.Skill == skillName)
                     UpdateHUD(player);
             }
@@ -71,16 +95,44 @@ namespace src.player.skills
         private static void UpdateHUD(CCSPlayerController player)
         {
             var skillData = SkillData.Skills.FirstOrDefault(s => s.Skill == skillName);
-            if (skillData == null || Instance?.GameRules == null || Instance?.GameRules?.RoundTime == null || Instance.GameRules?.RoundStartTime == null) return;
+            if (
+                skillData == null
+                || Instance?.GameRules == null
+                || Instance?.GameRules?.RoundTime == null
+                || Instance.GameRules?.RoundStartTime == null
+            )
+                return;
 
-            int seconds = 1 + (int)(Instance.GameRules.RoundTime - (Server.CurrentTime - Instance.GameRules.RoundStartTime));
-            
+            int seconds =
+                1
+                + (int)(
+                    Instance.GameRules.RoundTime
+                    - (Server.CurrentTime - Instance.GameRules.RoundStartTime)
+                );
+
             var playerInfo = Instance.SkillPlayer.FirstOrDefault(s => s.SteamID == player?.SteamID);
-            if (playerInfo == null) return;
+            if (playerInfo == null)
+                return;
             playerInfo.PrintHTML = SkillUtils.SecondsToTimer(seconds);
         }
 
-        public class SkillConfig(Skills skill = skillName, bool active = true, string color = "#ff462e", CsTeam onlyTeam = CsTeam.None, bool disableOnFreezeTime = false, bool needsTeammates = false, int changeRoundTime = 10) : SkillsInfo.DefaultSkillInfo(skill, active, color, onlyTeam, disableOnFreezeTime, needsTeammates)
+        public class SkillConfig(
+            Skills skill = skillName,
+            bool active = true,
+            string color = "#ff462e",
+            CsTeam onlyTeam = CsTeam.None,
+            bool disableOnFreezeTime = false,
+            bool needsTeammates = false,
+            int changeRoundTime = 10
+        )
+            : SkillsInfo.DefaultSkillInfo(
+                skill,
+                active,
+                color,
+                onlyTeam,
+                disableOnFreezeTime,
+                needsTeammates
+            )
         {
             public int ChangeRoundTime { get; set; } = changeRoundTime;
         }
