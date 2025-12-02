@@ -169,14 +169,13 @@ namespace src.utils
             }
 
             int newHealth = pawn.Health - damage;
-            pawn.Health = newHealth;
-            Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
-
-            if (pawn.Health <= 0)
-                Server.NextFrame(() =>
-                {
-                    pawn.CommitSuicide(false, true);
-                });
+            if (newHealth <= 0)
+                Server.NextFrame(() => pawn.CommitSuicide(false, true));
+            else
+            {
+                pawn.Health = newHealth;
+                Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
+            }
         }
 
         public static void ResetPrintHTML(CCSPlayerController? player)
