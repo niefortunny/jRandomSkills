@@ -56,6 +56,10 @@ namespace src.player.skills
             ConcurrentBag<uint>
         > invisibleEntities = [];
 
+        private static readonly string defaultCTModel = "characters/models/ctm_sas/ctm_sas.vmdl";
+        private static readonly string defaultTModel =
+            "characters/models/tm_phoenix/tm_phoenix.vmdl";
+
         public static void LoadSkill()
         {
             if (
@@ -114,6 +118,9 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
+            var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
+            SetPlayerModel(player, model);
+
             Event.EnableTransmit();
             SetPlayerVisibility(player, false);
             SetWeaponVisibility(player, false);
@@ -253,6 +260,26 @@ namespace src.player.skills
 
             playerInfo.PrintHTML =
                 $"<font color='#FF0000'>{player.GetTranslation("disabled_weapon")}</font>";
+        }
+
+        private static void SetPlayerModel(CCSPlayerController player, string model)
+        {
+            var pawn = player.PlayerPawn?.Value;
+            if (pawn == null)
+                return;
+
+            Server.NextFrame(() =>
+            {
+                pawn.SetModel(model);
+
+                var originalRender = pawn.Render;
+                pawn.Render = Color.FromArgb(
+                    255,
+                    originalRender.R,
+                    originalRender.G,
+                    originalRender.B
+                );
+            });
         }
 
         public class SkillConfig(

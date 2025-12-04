@@ -17,6 +17,10 @@ namespace src.player.skills
             ConcurrentBag<uint>
         > invisibleEntities = [];
 
+        private static readonly string defaultCTModel = "characters/models/ctm_sas/ctm_sas.vmdl";
+        private static readonly string defaultTModel =
+            "characters/models/tm_phoenix/tm_phoenix.vmdl";
+
         public static void LoadSkill()
         {
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
@@ -82,18 +86,24 @@ namespace src.player.skills
         public static void EnableSkill(CCSPlayerController player)
         {
             Event.EnableTransmit();
+
             if (player == null || !player.IsValid)
                 return;
-            var playerPawn = player.PlayerPawn.Value;
 
+            var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
+            SetPlayerModel(player, model);
+
+            var playerPawn = player.PlayerPawn.Value;
             if (playerPawn == null || !playerPawn.IsValid)
                 return;
+
             if (
                 playerPawn.WeaponServices == null
                 || playerPawn.WeaponServices.ActiveWeapon == null
                 || !playerPawn.WeaponServices.ActiveWeapon.IsValid
             )
                 return;
+
             if (
                 playerPawn.WeaponServices.ActiveWeapon.Value == null
                 || !playerPawn.WeaponServices.ActiveWeapon.Value.IsValid
@@ -159,6 +169,26 @@ namespace src.player.skills
 
             if (visible)
                 invisibleEntities.TryRemove(player.SteamID, out _);
+        }
+
+        private static void SetPlayerModel(CCSPlayerController player, string model)
+        {
+            var pawn = player.PlayerPawn?.Value;
+            if (pawn == null)
+                return;
+
+            Server.NextFrame(() =>
+            {
+                pawn.SetModel(model);
+
+                var originalRender = pawn.Render;
+                pawn.Render = Color.FromArgb(
+                    255,
+                    originalRender.R,
+                    originalRender.G,
+                    originalRender.B
+                );
+            });
         }
 
         public class SkillConfig(

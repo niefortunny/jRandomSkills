@@ -19,6 +19,10 @@ namespace src.player.skills
         > invisibleEntities = [];
         private static readonly object setLock = new();
 
+        private static readonly string defaultCTModel = "characters/models/ctm_sas/ctm_sas.vmdl";
+        private static readonly string defaultTModel =
+            "characters/models/tm_phoenix/tm_phoenix.vmdl";
+
         public static void LoadSkill()
         {
             SkillUtils.RegisterSkill(skillName, SkillsInfo.GetValue<string>(skillName, "color"));
@@ -82,8 +86,11 @@ namespace src.player.skills
             }
         }
 
-        public static void EnableSkill(CCSPlayerController _)
+        public static void EnableSkill(CCSPlayerController player)
         {
+            var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
+            SetPlayerModel(player, model);
+
             Event.EnableTransmit();
         }
 
@@ -202,6 +209,26 @@ namespace src.player.skills
                         invisibleEntities.TryAdd(player.SteamID, [weapon.Index]);
                 }
             }
+        }
+
+        private static void SetPlayerModel(CCSPlayerController player, string model)
+        {
+            var pawn = player.PlayerPawn?.Value;
+            if (pawn == null)
+                return;
+
+            Server.NextFrame(() =>
+            {
+                pawn.SetModel(model);
+
+                var originalRender = pawn.Render;
+                pawn.Render = Color.FromArgb(
+                    255,
+                    originalRender.R,
+                    originalRender.G,
+                    originalRender.B
+                );
+            });
         }
 
         public class SkillConfig(
