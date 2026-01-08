@@ -118,8 +118,8 @@ namespace src.player.skills
 
         public static void EnableSkill(CCSPlayerController player)
         {
-            var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
-            SetPlayerModel(player, model);
+            // var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
+            // SetPlayerModel(player, model);
 
             Event.EnableTransmit();
             SetPlayerVisibility(player, false);
@@ -297,6 +297,7 @@ namespace src.player.skills
                 onlyTeam,
                 disableOnFreezeTime,
                 needsTeammates
-            ) { }
+            )
+        { }
     }
 }

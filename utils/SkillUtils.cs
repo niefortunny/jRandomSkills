@@ -553,6 +553,9 @@ namespace src.utils
             if (!attacker.IsValid || !victim.IsValid)
                 return;
 
+            if (attacker.ActionTrackingServices is not null)
+                attacker.ActionTrackingServices.MatchStats.Kills++;
+
             new EventPlayerDeath(true)
             {
                 Attacker = attacker,

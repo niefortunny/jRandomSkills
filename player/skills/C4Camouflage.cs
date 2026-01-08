@@ -91,7 +91,7 @@ namespace src.player.skills
                 return;
 
             var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
-            SetPlayerModel(player, model);
+            // SetPlayerModel(player, model);
 
             var playerPawn = player.PlayerPawn.Value;
             if (playerPawn == null || !playerPawn.IsValid)
@@ -206,6 +206,7 @@ namespace src.player.skills
                 onlyTeam,
                 disableOnFreezeTime,
                 needsTeammates
-            ) { }
+            )
+        { }
     }
 }

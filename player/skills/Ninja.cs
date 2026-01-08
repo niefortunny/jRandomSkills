@@ -89,7 +89,7 @@ namespace src.player.skills
         public static void EnableSkill(CCSPlayerController player)
         {
             var model = player.Team == CsTeam.CounterTerrorist ? defaultCTModel : defaultTModel;
-            SetPlayerModel(player, model);
+            // SetPlayerModel(player, model);
 
             Event.EnableTransmit();
         }
